@@ -2,6 +2,8 @@
 
 Flutter mobile app untuk operasional kedai kopi **Arpul**. Aplikasi ini terhubung ke backend Laravel `Arpul-Coffee-shop` dan mendukung role **admin** dan **kasir**.
 
+Status progress terbaru project ada di [PROJECT_STATUS.md](PROJECT_STATUS.md).
+
 ## Fitur
 
 - Login/logout dengan Laravel Sanctum token
@@ -13,7 +15,7 @@ Flutter mobile app untuk operasional kedai kopi **Arpul**. Aplikasi ini terhubun
 - Pending order list
 - Confirm/cancel order
 - Detail order dan item pesanan
-- Real-time order notification via Pusher Channels
+- Real-time order notification via Laravel Reverb
 - Theme brand kedai kopi Arpul
 - Unit test repository dan notifier
 
@@ -25,7 +27,7 @@ Flutter mobile app untuk operasional kedai kopi **Arpul**. Aplikasi ini terhubun
 - Dio
 - Freezed + json_serializable
 - Flutter Secure Storage
-- Pusher Channels Flutter
+- Web Socket Channel
 - Cached Network Image
 - Intl
 - Shimmer
@@ -218,19 +220,20 @@ Jika tidak bisa login, cek data user di backend dan pastikan:
 - role adalah `admin` atau `kasir`
 - `is_active` bernilai true
 
-## Pusher Setup
+## Laravel Reverb Setup
 
-Konfigurasi Pusher ada di:
+Konfigurasi WebSocket Flutter ada di:
 
 ```text
-lib/core/constants/pusher_constants.dart
+lib/core/constants/websocket_constants.dart
 ```
 
-Isi sesuai Pusher app:
+Default untuk Android emulator:
 
 ```dart
-static const String kPusherAppKey = 'your_pusher_app_key';
-static const String kPusherCluster = 'mt1';
+static const String kWebSocketHost = '10.0.2.2';
+static const int kWebSocketPort = 6001;
+static const String kWebSocketAppKey = 'arpul-local-key';
 ```
 
 Channel:
@@ -246,10 +249,58 @@ new-order
 order-status-updated
 ```
 
-Untuk development tanpa Pusher aktif, tersedia:
+Backend Laravel memakai Laravel Reverb. Reverb tetap kompatibel dengan protokol Pusher, sehingga Flutter bisa connect langsung memakai `web_socket_channel`.
+
+Contoh `.env` backend untuk lokal:
+
+```env
+BROADCAST_CONNECTION=reverb
+QUEUE_CONNECTION=database
+
+REVERB_APP_ID=arpul-local
+REVERB_APP_KEY=arpul-local-key
+REVERB_APP_SECRET=arpul-local-secret
+REVERB_HOST=127.0.0.1
+REVERB_PORT=6001
+REVERB_SCHEME=http
+REVERB_SERVER_HOST=0.0.0.0
+REVERB_SERVER_PORT=6001
+```
+
+Jalankan server Reverb backend:
+
+```bash
+php artisan reverb:start --host=0.0.0.0 --port=6001
+```
+
+Jalankan queue worker agar event broadcast diproses:
+
+```bash
+php artisan queue:work
+```
+
+Jika memakai host/port/key berbeda, jalankan Flutter dengan `--dart-define`:
+
+```bash
+flutter run \
+  --dart-define=LARAVEL_WS_HOST=10.0.2.2 \
+  --dart-define=LARAVEL_WS_PORT=6001 \
+  --dart-define=LARAVEL_WS_APP_KEY=arpul-local-key
+```
+
+Untuk build APK:
+
+```bash
+flutter build apk --release \
+  --dart-define=LARAVEL_WS_HOST=192.168.1.10 \
+  --dart-define=LARAVEL_WS_PORT=6001 \
+  --dart-define=LARAVEL_WS_APP_KEY=arpul-local-key
+```
+
+Untuk development tanpa WebSocket aktif, tersedia:
 
 ```dart
-PusherService.mock()
+LaravelWebSocketService.mock()
 ```
 
 Mock ini dapat membuat fake order setiap 10 detik.
@@ -368,9 +419,9 @@ http://192.168.1.10:8001/api/v1
 
 Pastikan HP dan komputer berada di Wi-Fi yang sama.
 
-### Error Pusher
+### Error Laravel Reverb / WebSocket
 
-Jika Pusher belum dikonfigurasi, aplikasi tidak crash. Kasir akan melihat indikator real-time disconnected dan banner mode offline.
+Jika WebSocket belum aktif, aplikasi tidak crash. Kasir akan melihat indikator real-time disconnected dan banner mode offline. Pending order tetap refresh otomatis lewat polling fallback setiap 5 detik.
 
 ## Catatan Production
 
@@ -379,7 +430,7 @@ Sebelum production:
 - Gunakan HTTPS
 - Jangan gunakan `android:usesCleartextTraffic="true"`
 - Ganti base URL ke domain production
-- Konfigurasi Pusher key asli
+- Konfigurasi Laravel Reverb production
 - Buat signing config release sendiri
 - Jangan pakai debug signing untuk release production
 - Review logging dan error reporting

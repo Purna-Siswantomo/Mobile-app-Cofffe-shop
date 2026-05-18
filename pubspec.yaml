@@ -49,8 +49,8 @@ dependencies:
   json_annotation: ^4.9.0
   freezed_annotation: ^2.4.1
 
-  # Real-time (Pusher untuk order notifikasi)
-  pusher_channels_flutter: ^2.1.0
+  # Real-time (Laravel WebSockets)
+  web_socket_channel: ^3.0.3
 
   # UI Utilities
   cached_network_image: ^3.3.1

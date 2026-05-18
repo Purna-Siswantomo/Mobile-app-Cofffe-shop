@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../../core/services/pusher_service.dart';
+import '../../../../core/services/laravel_websocket_service.dart';
 import '../../../../features/auth/presentation/providers/auth_provider.dart';
 import '../../../../shared/widgets/connection_indicator.dart';
 import '../../../../shared/widgets/app_error_widget.dart';
@@ -19,24 +19,25 @@ class KasirDashboardScreen extends ConsumerStatefulWidget {
 }
 
 class _KasirDashboardScreenState extends ConsumerState<KasirDashboardScreen> {
-  late final PusherService _pusherService;
+  late final LaravelWebSocketService _webSocketService;
 
   @override
   void initState() {
     super.initState();
-    _pusherService = PusherService()..addListener(_onPusherStatusChanged);
-    _pusherService.init(ref);
+    _webSocketService = LaravelWebSocketService()
+      ..addListener(_onWebSocketStatusChanged);
+    _webSocketService.init(ref);
   }
 
   @override
   void dispose() {
-    _pusherService
-      ..removeListener(_onPusherStatusChanged)
+    _webSocketService
+      ..removeListener(_onWebSocketStatusChanged)
       ..disconnect();
     super.dispose();
   }
 
-  void _onPusherStatusChanged() {
+  void _onWebSocketStatusChanged() {
     if (mounted) {
       setState(() {});
     }
@@ -46,7 +47,7 @@ class _KasirDashboardScreenState extends ConsumerState<KasirDashboardScreen> {
   Widget build(BuildContext context) {
     final ordersState = ref.watch(pendingOrdersProvider);
     final pendingCount = ordersState.valueOrNull?.length ?? 0;
-    final connectionStatus = _pusherService.status;
+    final connectionStatus = _webSocketService.status;
 
     return Scaffold(
       appBar: AppBar(

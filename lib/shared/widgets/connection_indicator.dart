@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../core/services/pusher_service.dart';
+import '../../core/services/laravel_websocket_service.dart';
 
 class ConnectionIndicator extends StatelessWidget {
   const ConnectionIndicator({super.key, required this.status});

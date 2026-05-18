@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -17,12 +19,33 @@ class PendingOrders extends _$PendingOrders {
 
   @override
   Future<List<OrderModel>> build() {
+    final timer = Timer.periodic(const Duration(seconds: 5), (_) {
+      refreshSilently();
+    });
+    ref.onDispose(timer.cancel);
+
     return _repository.getPendingOrders();
   }
 
   Future<void> fetchPending() async {
     state = const AsyncValue.loading();
     state = await AsyncValue.guard(_repository.getPendingOrders);
+  }
+
+  Future<void> refreshSilently() async {
+    final previousOrders = state.value;
+
+    try {
+      final orders = await _repository.getPendingOrders();
+      state = AsyncValue.data(orders);
+    } catch (error, stackTrace) {
+      if (previousOrders != null) {
+        state = AsyncValue.data(previousOrders);
+        return;
+      }
+
+      state = AsyncValue.error(error, stackTrace);
+    }
   }
 
   Future<void> confirmOrder(int id) async {

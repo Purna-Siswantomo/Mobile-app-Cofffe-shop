@@ -23,7 +23,7 @@ final orderRepositoryProvider = AutoDisposeProvider<OrderRepository>.internal(
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef OrderRepositoryRef = AutoDisposeProviderRef<OrderRepository>;
-String _$pendingOrdersHash() => r'fa69a6697a8d17fd1c693740b7dfdd9892cfaf8d';
+String _$pendingOrdersHash() => r'fd2300b8ca5641c0f7dcefd2c748f28f4f8b71e7';
 
 /// See also [PendingOrders].
 @ProviderFor(PendingOrders)
