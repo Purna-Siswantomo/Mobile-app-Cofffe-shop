@@ -13,6 +13,7 @@ class StatusBadge extends StatelessWidget {
     return DecoratedBox(
       decoration: BoxDecoration(
         color: badgeColor,
+        border: Border.all(color: _borderColor(status)),
         borderRadius: BorderRadius.circular(999),
       ),
       child: Padding(
@@ -20,9 +21,9 @@ class StatusBadge extends StatelessWidget {
         child: Text(
           label ?? _defaultLabel(status),
           style: TextStyle(
-            color: _foregroundColor(badgeColor),
+            color: _foregroundColor(status),
             fontSize: 12,
-            fontWeight: FontWeight.w700,
+            fontWeight: FontWeight.w600,
           ),
         ),
       ),
@@ -31,19 +32,28 @@ class StatusBadge extends StatelessWidget {
 
   Color _backgroundColor(String status) {
     return switch (status) {
-      'pending' => const Color(0xFFF59E0B),
-      'confirmed' => const Color(0xFF2563EB),
-      'completed' => const Color(0xFF16A34A),
-      'cancelled' || 'canceled' => const Color(0xFFDC2626),
-      _ => const Color(0xFF6B7280),
+      'pending' => const Color(0xFFFFF4D8),
+      'confirmed' || 'in_progress' => const Color(0xFFDAE2FD),
+      'delivering' => const Color(0xFFE5EEFF),
+      'completed' || 'paid' => const Color(0xFFA6F2D1),
+      'cancelled' || 'canceled' || 'rejected' => const Color(0xFFFFDAD6),
+      _ => const Color(0xFFEFF4FF),
     };
   }
 
-  Color _foregroundColor(Color backgroundColor) {
-    return ThemeData.estimateBrightnessForColor(backgroundColor) ==
-            Brightness.dark
-        ? Colors.white
-        : Colors.black;
+  Color _foregroundColor(String status) {
+    return switch (status) {
+      'pending' => const Color(0xFF7A4D00),
+      'confirmed' || 'in_progress' => const Color(0xFF3F465C),
+      'delivering' => const Color(0xFF004532),
+      'completed' || 'paid' => const Color(0xFF00513B),
+      'cancelled' || 'canceled' || 'rejected' => const Color(0xFF93000A),
+      _ => const Color(0xFF3F4944),
+    };
+  }
+
+  Color _borderColor(String status) {
+    return _foregroundColor(status).withValues(alpha: 0.18);
   }
 
   String _defaultLabel(String status) {

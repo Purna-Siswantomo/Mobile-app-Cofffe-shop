@@ -26,7 +26,7 @@ final transactionRepositoryProvider =
 // ignore: unused_element
 typedef TransactionRepositoryRef =
     AutoDisposeProviderRef<TransactionRepository>;
-String _$transactionsHash() => r'ae9ec882f89fe5b3c46ec9bca1ec0aa62afec479';
+String _$transactionsHash() => r'4dfea2c8fad67d1c5b4fdc1f5aea64f79f83dd36';
 
 /// See also [transactions].
 @ProviderFor(transactions)

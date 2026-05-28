@@ -14,7 +14,19 @@ _$OrderModelImpl _$$OrderModelImplFromJson(Map<String, dynamic> json) =>
         _readTotalAmount(json, 'totalAmount'),
       ),
       status: json['status'] as String? ?? 'pending',
+      orderType: json['order_type'] as String?,
       paymentMethod: json['payment_method'] as String?,
+      paymentStatus: json['payment_status'] as String?,
+      paymentProof: json['payment_proof'] as String?,
+      paymentProofUrl: json['payment_proof_url'] as String?,
+      tableNumber: json['table_number'] as String?,
+      notes: json['notes'] as String?,
+      user: json['user'] == null
+          ? null
+          : UserSummaryModel.fromJson(json['user'] as Map<String, dynamic>),
+      delivery: json['delivery'] == null
+          ? null
+          : DeliveryModel.fromJson(json['delivery'] as Map<String, dynamic>),
       createdAt: json['created_at'] as String,
       itemCount: (_readItemCount(json, 'itemCount') as num?)?.toInt(),
       details:
@@ -31,10 +43,75 @@ Map<String, dynamic> _$$OrderModelImplToJson(
   'user_id': instance.userId,
   'totalAmount': const FlexibleDoubleConverter().toJson(instance.totalAmount),
   'status': instance.status,
+  'order_type': instance.orderType,
   'payment_method': instance.paymentMethod,
+  'payment_status': instance.paymentStatus,
+  'payment_proof': instance.paymentProof,
+  'payment_proof_url': instance.paymentProofUrl,
+  'table_number': instance.tableNumber,
+  'notes': instance.notes,
+  'user': instance.user,
+  'delivery': instance.delivery,
   'created_at': instance.createdAt,
   'itemCount': instance.itemCount,
   'details': instance.details,
+};
+
+_$UserSummaryModelImpl _$$UserSummaryModelImplFromJson(
+  Map<String, dynamic> json,
+) => _$UserSummaryModelImpl(
+  id: (json['id'] as num).toInt(),
+  name: json['name'] as String,
+  email: json['email'] as String?,
+  role: json['role'] as String?,
+);
+
+Map<String, dynamic> _$$UserSummaryModelImplToJson(
+  _$UserSummaryModelImpl instance,
+) => <String, dynamic>{
+  'id': instance.id,
+  'name': instance.name,
+  'email': instance.email,
+  'role': instance.role,
+};
+
+_$DeliveryModelImpl _$$DeliveryModelImplFromJson(Map<String, dynamic> json) =>
+    _$DeliveryModelImpl(
+      id: (json['id'] as num).toInt(),
+      transactionId: (json['transaction_id'] as num?)?.toInt(),
+      recipientName: json['recipient_name'] as String?,
+      address: json['address'] as String?,
+      phone: json['phone'] as String?,
+      status: json['status'] as String?,
+      notes: json['notes'] as String?,
+      latitude: const FlexibleNullableDoubleConverter().fromJson(
+        json['latitude'],
+      ),
+      longitude: const FlexibleNullableDoubleConverter().fromJson(
+        json['longitude'],
+      ),
+      deliveryFee: const FlexibleNullableDoubleConverter().fromJson(
+        json['delivery_fee'],
+      ),
+    );
+
+Map<String, dynamic> _$$DeliveryModelImplToJson(
+  _$DeliveryModelImpl instance,
+) => <String, dynamic>{
+  'id': instance.id,
+  'transaction_id': instance.transactionId,
+  'recipient_name': instance.recipientName,
+  'address': instance.address,
+  'phone': instance.phone,
+  'status': instance.status,
+  'notes': instance.notes,
+  'latitude': const FlexibleNullableDoubleConverter().toJson(instance.latitude),
+  'longitude': const FlexibleNullableDoubleConverter().toJson(
+    instance.longitude,
+  ),
+  'delivery_fee': const FlexibleNullableDoubleConverter().toJson(
+    instance.deliveryFee,
+  ),
 };
 
 _$OrderItemModelImpl _$$OrderItemModelImplFromJson(Map<String, dynamic> json) =>

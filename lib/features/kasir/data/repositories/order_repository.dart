@@ -3,6 +3,7 @@ import 'package:dio/dio.dart';
 import '../../../../core/constants/api_constants.dart';
 import '../../../../core/network/app_exception.dart';
 import '../../../../core/network/dio_client.dart';
+import '../../../admin/data/models/product_model.dart';
 import '../models/order_model.dart';
 
 class OrderRepository {
@@ -12,13 +13,64 @@ class OrderRepository {
   final Dio _dio;
 
   Future<List<OrderModel>> getPendingOrders() async {
+    return _getOrders(ApiEndpoints.kOrdersPending);
+  }
+
+  Future<List<OrderModel>> getPendingReviewOrders() async {
+    return _getOrders(ApiEndpoints.kOrdersPendingReview);
+  }
+
+  Future<List<OrderModel>> getReadyToConfirmOrders() async {
+    return _getOrders(ApiEndpoints.kOrdersReadyToConfirm);
+  }
+
+  Future<List<OrderModel>> getInProgressOrders() async {
+    return _getOrders(ApiEndpoints.kOrdersInProgress);
+  }
+
+  Future<OrderModel> getOrder(int id) async {
     try {
       final response = await _dio.get<Map<String, dynamic>>(
-        ApiEndpoints.kOrdersPending,
+        _withId(ApiEndpoints.kOrderDetail, id),
       );
+
+      return OrderModel.fromJson(_readMap(response.data));
+    } on DioException catch (error) {
+      throw _toAppException(error);
+    }
+  }
+
+  Future<List<OrderModel>> _getOrders(String endpoint) async {
+    try {
+      final response = await _dio.get<Map<String, dynamic>>(endpoint);
       final data = _readList(response.data);
 
       return data.map(OrderModel.fromJson).toList();
+    } on DioException catch (error) {
+      throw _toAppException(error);
+    }
+  }
+
+  Future<OrderModel> verifyPayment(int id) async {
+    try {
+      final response = await _dio.post<Map<String, dynamic>>(
+        _withId(ApiEndpoints.kOrderVerifyPayment, id),
+      );
+
+      return OrderModel.fromJson(_readMap(response.data));
+    } on DioException catch (error) {
+      throw _toAppException(error);
+    }
+  }
+
+  Future<OrderModel> rejectPayment(int id, String reason) async {
+    try {
+      final response = await _dio.post<Map<String, dynamic>>(
+        _withId(ApiEndpoints.kOrderRejectPayment, id),
+        data: {'reason': reason},
+      );
+
+      return OrderModel.fromJson(_readMap(response.data));
     } on DioException catch (error) {
       throw _toAppException(error);
     }
@@ -28,6 +80,30 @@ class OrderRepository {
     try {
       final response = await _dio.post<Map<String, dynamic>>(
         _withId(ApiEndpoints.kOrderConfirm, id),
+      );
+
+      return OrderModel.fromJson(_readMap(response.data));
+    } on DioException catch (error) {
+      throw _toAppException(error);
+    }
+  }
+
+  Future<OrderModel> deliverOrder(int id) async {
+    try {
+      final response = await _dio.post<Map<String, dynamic>>(
+        _withId(ApiEndpoints.kOrderDeliver, id),
+      );
+
+      return OrderModel.fromJson(_readMap(response.data));
+    } on DioException catch (error) {
+      throw _toAppException(error);
+    }
+  }
+
+  Future<OrderModel> completeOrder(int id) async {
+    try {
+      final response = await _dio.post<Map<String, dynamic>>(
+        _withId(ApiEndpoints.kOrderComplete, id),
       );
 
       return OrderModel.fromJson(_readMap(response.data));
@@ -57,6 +133,48 @@ class OrderRepository {
       );
 
       return OrderModel.fromJson(_readMap(response.data));
+    } on DioException catch (error) {
+      throw _toAppException(error);
+    }
+  }
+
+  Future<List<ProductModel>> getPosProducts() async {
+    try {
+      final response = await _dio.get<Map<String, dynamic>>(
+        ApiEndpoints.kPosProducts,
+      );
+      final data = _readList(response.data);
+
+      return data.map(ProductModel.fromJson).toList();
+    } on DioException catch (error) {
+      throw _toAppException(error);
+    }
+  }
+
+  Future<PosTransactionResult> createPosTransaction({
+    required List<PosItemPayload> items,
+    required double paidAmount,
+    String? tableNumber,
+    String? notes,
+  }) async {
+    try {
+      final response = await _dio.post<Map<String, dynamic>>(
+        ApiEndpoints.kPosTransactions,
+        data: {
+          'items': items.map((item) => item.toJson()).toList(),
+          'paid_amount': paidAmount,
+          if (tableNumber != null && tableNumber.isNotEmpty)
+            'table_number': tableNumber,
+          if (notes != null && notes.isNotEmpty) 'notes': notes,
+        },
+      );
+      final data = _readMap(response.data);
+
+      return PosTransactionResult(
+        transaction: OrderModel.fromJson(_asMap(data['transaction'])),
+        change: (data['change'] as num?)?.toDouble() ?? 0,
+        receiptUrl: data['receipt_url']?.toString(),
+      );
     } on DioException catch (error) {
       throw _toAppException(error);
     }
@@ -100,4 +218,28 @@ class OrderRepository {
 
     return UnknownException(error.message ?? 'Terjadi kesalahan order');
   }
+}
+
+class PosItemPayload {
+  const PosItemPayload({required this.productId, required this.quantity});
+
+  final int productId;
+  final int quantity;
+
+  Map<String, dynamic> toJson() => {
+    'product_id': productId,
+    'quantity': quantity,
+  };
+}
+
+class PosTransactionResult {
+  const PosTransactionResult({
+    required this.transaction,
+    required this.change,
+    this.receiptUrl,
+  });
+
+  final OrderModel transaction;
+  final double change;
+  final String? receiptUrl;
 }

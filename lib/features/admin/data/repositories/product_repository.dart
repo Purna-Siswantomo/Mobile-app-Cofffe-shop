@@ -11,11 +11,22 @@ class ProductRepository {
 
   final Dio _dio;
 
-  Future<List<ProductModel>> getProducts({int page = 1}) async {
+  Future<List<ProductModel>> getProducts({
+    int page = 1,
+    String? search,
+    String? category,
+    String? stockStatus,
+  }) async {
     try {
       final response = await _dio.get<Map<String, dynamic>>(
         ApiEndpoints.kProducts,
-        queryParameters: {'page': page},
+        queryParameters: {
+          'page': page,
+          if (search != null && search.isNotEmpty) 'search': search,
+          if (category != null && category.isNotEmpty) 'category': category,
+          if (stockStatus != null && stockStatus.isNotEmpty)
+            'stock_status': stockStatus,
+        },
       );
       final data = _readList(response.data);
 

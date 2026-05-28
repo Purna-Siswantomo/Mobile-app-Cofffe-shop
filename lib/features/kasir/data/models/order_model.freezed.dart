@@ -29,8 +29,21 @@ mixin _$OrderModel {
   @FlexibleDoubleConverter()
   double get totalAmount => throw _privateConstructorUsedError;
   String get status => throw _privateConstructorUsedError;
+  @JsonKey(name: 'order_type')
+  String? get orderType => throw _privateConstructorUsedError;
   @JsonKey(name: 'payment_method')
   String? get paymentMethod => throw _privateConstructorUsedError;
+  @JsonKey(name: 'payment_status')
+  String? get paymentStatus => throw _privateConstructorUsedError;
+  @JsonKey(name: 'payment_proof')
+  String? get paymentProof => throw _privateConstructorUsedError;
+  @JsonKey(name: 'payment_proof_url')
+  String? get paymentProofUrl => throw _privateConstructorUsedError;
+  @JsonKey(name: 'table_number')
+  String? get tableNumber => throw _privateConstructorUsedError;
+  String? get notes => throw _privateConstructorUsedError;
+  UserSummaryModel? get user => throw _privateConstructorUsedError;
+  DeliveryModel? get delivery => throw _privateConstructorUsedError;
   @JsonKey(name: 'created_at')
   String get createdAt => throw _privateConstructorUsedError;
   @JsonKey(readValue: _readItemCount)
@@ -61,11 +74,22 @@ abstract class $OrderModelCopyWith<$Res> {
     @FlexibleDoubleConverter()
     double totalAmount,
     String status,
+    @JsonKey(name: 'order_type') String? orderType,
     @JsonKey(name: 'payment_method') String? paymentMethod,
+    @JsonKey(name: 'payment_status') String? paymentStatus,
+    @JsonKey(name: 'payment_proof') String? paymentProof,
+    @JsonKey(name: 'payment_proof_url') String? paymentProofUrl,
+    @JsonKey(name: 'table_number') String? tableNumber,
+    String? notes,
+    UserSummaryModel? user,
+    DeliveryModel? delivery,
     @JsonKey(name: 'created_at') String createdAt,
     @JsonKey(readValue: _readItemCount) int? itemCount,
     List<OrderItemModel> details,
   });
+
+  $UserSummaryModelCopyWith<$Res>? get user;
+  $DeliveryModelCopyWith<$Res>? get delivery;
 }
 
 /// @nodoc
@@ -87,7 +111,15 @@ class _$OrderModelCopyWithImpl<$Res, $Val extends OrderModel>
     Object? userId = freezed,
     Object? totalAmount = null,
     Object? status = null,
+    Object? orderType = freezed,
     Object? paymentMethod = freezed,
+    Object? paymentStatus = freezed,
+    Object? paymentProof = freezed,
+    Object? paymentProofUrl = freezed,
+    Object? tableNumber = freezed,
+    Object? notes = freezed,
+    Object? user = freezed,
+    Object? delivery = freezed,
     Object? createdAt = null,
     Object? itemCount = freezed,
     Object? details = null,
@@ -110,10 +142,42 @@ class _$OrderModelCopyWithImpl<$Res, $Val extends OrderModel>
                 ? _value.status
                 : status // ignore: cast_nullable_to_non_nullable
                       as String,
+            orderType: freezed == orderType
+                ? _value.orderType
+                : orderType // ignore: cast_nullable_to_non_nullable
+                      as String?,
             paymentMethod: freezed == paymentMethod
                 ? _value.paymentMethod
                 : paymentMethod // ignore: cast_nullable_to_non_nullable
                       as String?,
+            paymentStatus: freezed == paymentStatus
+                ? _value.paymentStatus
+                : paymentStatus // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            paymentProof: freezed == paymentProof
+                ? _value.paymentProof
+                : paymentProof // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            paymentProofUrl: freezed == paymentProofUrl
+                ? _value.paymentProofUrl
+                : paymentProofUrl // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            tableNumber: freezed == tableNumber
+                ? _value.tableNumber
+                : tableNumber // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            notes: freezed == notes
+                ? _value.notes
+                : notes // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            user: freezed == user
+                ? _value.user
+                : user // ignore: cast_nullable_to_non_nullable
+                      as UserSummaryModel?,
+            delivery: freezed == delivery
+                ? _value.delivery
+                : delivery // ignore: cast_nullable_to_non_nullable
+                      as DeliveryModel?,
             createdAt: null == createdAt
                 ? _value.createdAt
                 : createdAt // ignore: cast_nullable_to_non_nullable
@@ -129,6 +193,34 @@ class _$OrderModelCopyWithImpl<$Res, $Val extends OrderModel>
           )
           as $Val,
     );
+  }
+
+  /// Create a copy of OrderModel
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $UserSummaryModelCopyWith<$Res>? get user {
+    if (_value.user == null) {
+      return null;
+    }
+
+    return $UserSummaryModelCopyWith<$Res>(_value.user!, (value) {
+      return _then(_value.copyWith(user: value) as $Val);
+    });
+  }
+
+  /// Create a copy of OrderModel
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $DeliveryModelCopyWith<$Res>? get delivery {
+    if (_value.delivery == null) {
+      return null;
+    }
+
+    return $DeliveryModelCopyWith<$Res>(_value.delivery!, (value) {
+      return _then(_value.copyWith(delivery: value) as $Val);
+    });
   }
 }
 
@@ -148,11 +240,24 @@ abstract class _$$OrderModelImplCopyWith<$Res>
     @FlexibleDoubleConverter()
     double totalAmount,
     String status,
+    @JsonKey(name: 'order_type') String? orderType,
     @JsonKey(name: 'payment_method') String? paymentMethod,
+    @JsonKey(name: 'payment_status') String? paymentStatus,
+    @JsonKey(name: 'payment_proof') String? paymentProof,
+    @JsonKey(name: 'payment_proof_url') String? paymentProofUrl,
+    @JsonKey(name: 'table_number') String? tableNumber,
+    String? notes,
+    UserSummaryModel? user,
+    DeliveryModel? delivery,
     @JsonKey(name: 'created_at') String createdAt,
     @JsonKey(readValue: _readItemCount) int? itemCount,
     List<OrderItemModel> details,
   });
+
+  @override
+  $UserSummaryModelCopyWith<$Res>? get user;
+  @override
+  $DeliveryModelCopyWith<$Res>? get delivery;
 }
 
 /// @nodoc
@@ -173,7 +278,15 @@ class __$$OrderModelImplCopyWithImpl<$Res>
     Object? userId = freezed,
     Object? totalAmount = null,
     Object? status = null,
+    Object? orderType = freezed,
     Object? paymentMethod = freezed,
+    Object? paymentStatus = freezed,
+    Object? paymentProof = freezed,
+    Object? paymentProofUrl = freezed,
+    Object? tableNumber = freezed,
+    Object? notes = freezed,
+    Object? user = freezed,
+    Object? delivery = freezed,
     Object? createdAt = null,
     Object? itemCount = freezed,
     Object? details = null,
@@ -196,10 +309,42 @@ class __$$OrderModelImplCopyWithImpl<$Res>
             ? _value.status
             : status // ignore: cast_nullable_to_non_nullable
                   as String,
+        orderType: freezed == orderType
+            ? _value.orderType
+            : orderType // ignore: cast_nullable_to_non_nullable
+                  as String?,
         paymentMethod: freezed == paymentMethod
             ? _value.paymentMethod
             : paymentMethod // ignore: cast_nullable_to_non_nullable
                   as String?,
+        paymentStatus: freezed == paymentStatus
+            ? _value.paymentStatus
+            : paymentStatus // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        paymentProof: freezed == paymentProof
+            ? _value.paymentProof
+            : paymentProof // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        paymentProofUrl: freezed == paymentProofUrl
+            ? _value.paymentProofUrl
+            : paymentProofUrl // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        tableNumber: freezed == tableNumber
+            ? _value.tableNumber
+            : tableNumber // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        notes: freezed == notes
+            ? _value.notes
+            : notes // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        user: freezed == user
+            ? _value.user
+            : user // ignore: cast_nullable_to_non_nullable
+                  as UserSummaryModel?,
+        delivery: freezed == delivery
+            ? _value.delivery
+            : delivery // ignore: cast_nullable_to_non_nullable
+                  as DeliveryModel?,
         createdAt: null == createdAt
             ? _value.createdAt
             : createdAt // ignore: cast_nullable_to_non_nullable
@@ -227,7 +372,15 @@ class _$OrderModelImpl extends _OrderModel {
     @FlexibleDoubleConverter()
     required this.totalAmount,
     this.status = 'pending',
+    @JsonKey(name: 'order_type') this.orderType,
     @JsonKey(name: 'payment_method') this.paymentMethod,
+    @JsonKey(name: 'payment_status') this.paymentStatus,
+    @JsonKey(name: 'payment_proof') this.paymentProof,
+    @JsonKey(name: 'payment_proof_url') this.paymentProofUrl,
+    @JsonKey(name: 'table_number') this.tableNumber,
+    this.notes,
+    this.user,
+    this.delivery,
     @JsonKey(name: 'created_at') required this.createdAt,
     @JsonKey(readValue: _readItemCount) this.itemCount,
     final List<OrderItemModel> details = const <OrderItemModel>[],
@@ -251,8 +404,29 @@ class _$OrderModelImpl extends _OrderModel {
   @JsonKey()
   final String status;
   @override
+  @JsonKey(name: 'order_type')
+  final String? orderType;
+  @override
   @JsonKey(name: 'payment_method')
   final String? paymentMethod;
+  @override
+  @JsonKey(name: 'payment_status')
+  final String? paymentStatus;
+  @override
+  @JsonKey(name: 'payment_proof')
+  final String? paymentProof;
+  @override
+  @JsonKey(name: 'payment_proof_url')
+  final String? paymentProofUrl;
+  @override
+  @JsonKey(name: 'table_number')
+  final String? tableNumber;
+  @override
+  final String? notes;
+  @override
+  final UserSummaryModel? user;
+  @override
+  final DeliveryModel? delivery;
   @override
   @JsonKey(name: 'created_at')
   final String createdAt;
@@ -270,7 +444,7 @@ class _$OrderModelImpl extends _OrderModel {
 
   @override
   String toString() {
-    return 'OrderModel(id: $id, userId: $userId, totalAmount: $totalAmount, status: $status, paymentMethod: $paymentMethod, createdAt: $createdAt, itemCount: $itemCount, details: $details)';
+    return 'OrderModel(id: $id, userId: $userId, totalAmount: $totalAmount, status: $status, orderType: $orderType, paymentMethod: $paymentMethod, paymentStatus: $paymentStatus, paymentProof: $paymentProof, paymentProofUrl: $paymentProofUrl, tableNumber: $tableNumber, notes: $notes, user: $user, delivery: $delivery, createdAt: $createdAt, itemCount: $itemCount, details: $details)';
   }
 
   @override
@@ -283,8 +457,22 @@ class _$OrderModelImpl extends _OrderModel {
             (identical(other.totalAmount, totalAmount) ||
                 other.totalAmount == totalAmount) &&
             (identical(other.status, status) || other.status == status) &&
+            (identical(other.orderType, orderType) ||
+                other.orderType == orderType) &&
             (identical(other.paymentMethod, paymentMethod) ||
                 other.paymentMethod == paymentMethod) &&
+            (identical(other.paymentStatus, paymentStatus) ||
+                other.paymentStatus == paymentStatus) &&
+            (identical(other.paymentProof, paymentProof) ||
+                other.paymentProof == paymentProof) &&
+            (identical(other.paymentProofUrl, paymentProofUrl) ||
+                other.paymentProofUrl == paymentProofUrl) &&
+            (identical(other.tableNumber, tableNumber) ||
+                other.tableNumber == tableNumber) &&
+            (identical(other.notes, notes) || other.notes == notes) &&
+            (identical(other.user, user) || other.user == user) &&
+            (identical(other.delivery, delivery) ||
+                other.delivery == delivery) &&
             (identical(other.createdAt, createdAt) ||
                 other.createdAt == createdAt) &&
             (identical(other.itemCount, itemCount) ||
@@ -300,7 +488,15 @@ class _$OrderModelImpl extends _OrderModel {
     userId,
     totalAmount,
     status,
+    orderType,
     paymentMethod,
+    paymentStatus,
+    paymentProof,
+    paymentProofUrl,
+    tableNumber,
+    notes,
+    user,
+    delivery,
     createdAt,
     itemCount,
     const DeepCollectionEquality().hash(_details),
@@ -328,7 +524,15 @@ abstract class _OrderModel extends OrderModel {
     @FlexibleDoubleConverter()
     required final double totalAmount,
     final String status,
+    @JsonKey(name: 'order_type') final String? orderType,
     @JsonKey(name: 'payment_method') final String? paymentMethod,
+    @JsonKey(name: 'payment_status') final String? paymentStatus,
+    @JsonKey(name: 'payment_proof') final String? paymentProof,
+    @JsonKey(name: 'payment_proof_url') final String? paymentProofUrl,
+    @JsonKey(name: 'table_number') final String? tableNumber,
+    final String? notes,
+    final UserSummaryModel? user,
+    final DeliveryModel? delivery,
     @JsonKey(name: 'created_at') required final String createdAt,
     @JsonKey(readValue: _readItemCount) final int? itemCount,
     final List<OrderItemModel> details,
@@ -351,8 +555,29 @@ abstract class _OrderModel extends OrderModel {
   @override
   String get status;
   @override
+  @JsonKey(name: 'order_type')
+  String? get orderType;
+  @override
   @JsonKey(name: 'payment_method')
   String? get paymentMethod;
+  @override
+  @JsonKey(name: 'payment_status')
+  String? get paymentStatus;
+  @override
+  @JsonKey(name: 'payment_proof')
+  String? get paymentProof;
+  @override
+  @JsonKey(name: 'payment_proof_url')
+  String? get paymentProofUrl;
+  @override
+  @JsonKey(name: 'table_number')
+  String? get tableNumber;
+  @override
+  String? get notes;
+  @override
+  UserSummaryModel? get user;
+  @override
+  DeliveryModel? get delivery;
   @override
   @JsonKey(name: 'created_at')
   String get createdAt;
@@ -367,6 +592,608 @@ abstract class _OrderModel extends OrderModel {
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
   _$$OrderModelImplCopyWith<_$OrderModelImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+UserSummaryModel _$UserSummaryModelFromJson(Map<String, dynamic> json) {
+  return _UserSummaryModel.fromJson(json);
+}
+
+/// @nodoc
+mixin _$UserSummaryModel {
+  int get id => throw _privateConstructorUsedError;
+  String get name => throw _privateConstructorUsedError;
+  String? get email => throw _privateConstructorUsedError;
+  String? get role => throw _privateConstructorUsedError;
+
+  /// Serializes this UserSummaryModel to a JSON map.
+  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+
+  /// Create a copy of UserSummaryModel
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  $UserSummaryModelCopyWith<UserSummaryModel> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class $UserSummaryModelCopyWith<$Res> {
+  factory $UserSummaryModelCopyWith(
+    UserSummaryModel value,
+    $Res Function(UserSummaryModel) then,
+  ) = _$UserSummaryModelCopyWithImpl<$Res, UserSummaryModel>;
+  @useResult
+  $Res call({int id, String name, String? email, String? role});
+}
+
+/// @nodoc
+class _$UserSummaryModelCopyWithImpl<$Res, $Val extends UserSummaryModel>
+    implements $UserSummaryModelCopyWith<$Res> {
+  _$UserSummaryModelCopyWithImpl(this._value, this._then);
+
+  // ignore: unused_field
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
+
+  /// Create a copy of UserSummaryModel
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? id = null,
+    Object? name = null,
+    Object? email = freezed,
+    Object? role = freezed,
+  }) {
+    return _then(
+      _value.copyWith(
+            id: null == id
+                ? _value.id
+                : id // ignore: cast_nullable_to_non_nullable
+                      as int,
+            name: null == name
+                ? _value.name
+                : name // ignore: cast_nullable_to_non_nullable
+                      as String,
+            email: freezed == email
+                ? _value.email
+                : email // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            role: freezed == role
+                ? _value.role
+                : role // ignore: cast_nullable_to_non_nullable
+                      as String?,
+          )
+          as $Val,
+    );
+  }
+}
+
+/// @nodoc
+abstract class _$$UserSummaryModelImplCopyWith<$Res>
+    implements $UserSummaryModelCopyWith<$Res> {
+  factory _$$UserSummaryModelImplCopyWith(
+    _$UserSummaryModelImpl value,
+    $Res Function(_$UserSummaryModelImpl) then,
+  ) = __$$UserSummaryModelImplCopyWithImpl<$Res>;
+  @override
+  @useResult
+  $Res call({int id, String name, String? email, String? role});
+}
+
+/// @nodoc
+class __$$UserSummaryModelImplCopyWithImpl<$Res>
+    extends _$UserSummaryModelCopyWithImpl<$Res, _$UserSummaryModelImpl>
+    implements _$$UserSummaryModelImplCopyWith<$Res> {
+  __$$UserSummaryModelImplCopyWithImpl(
+    _$UserSummaryModelImpl _value,
+    $Res Function(_$UserSummaryModelImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of UserSummaryModel
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? id = null,
+    Object? name = null,
+    Object? email = freezed,
+    Object? role = freezed,
+  }) {
+    return _then(
+      _$UserSummaryModelImpl(
+        id: null == id
+            ? _value.id
+            : id // ignore: cast_nullable_to_non_nullable
+                  as int,
+        name: null == name
+            ? _value.name
+            : name // ignore: cast_nullable_to_non_nullable
+                  as String,
+        email: freezed == email
+            ? _value.email
+            : email // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        role: freezed == role
+            ? _value.role
+            : role // ignore: cast_nullable_to_non_nullable
+                  as String?,
+      ),
+    );
+  }
+}
+
+/// @nodoc
+@JsonSerializable()
+class _$UserSummaryModelImpl implements _UserSummaryModel {
+  const _$UserSummaryModelImpl({
+    required this.id,
+    required this.name,
+    this.email,
+    this.role,
+  });
+
+  factory _$UserSummaryModelImpl.fromJson(Map<String, dynamic> json) =>
+      _$$UserSummaryModelImplFromJson(json);
+
+  @override
+  final int id;
+  @override
+  final String name;
+  @override
+  final String? email;
+  @override
+  final String? role;
+
+  @override
+  String toString() {
+    return 'UserSummaryModel(id: $id, name: $name, email: $email, role: $role)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$UserSummaryModelImpl &&
+            (identical(other.id, id) || other.id == id) &&
+            (identical(other.name, name) || other.name == name) &&
+            (identical(other.email, email) || other.email == email) &&
+            (identical(other.role, role) || other.role == role));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(runtimeType, id, name, email, role);
+
+  /// Create a copy of UserSummaryModel
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$UserSummaryModelImplCopyWith<_$UserSummaryModelImpl> get copyWith =>
+      __$$UserSummaryModelImplCopyWithImpl<_$UserSummaryModelImpl>(
+        this,
+        _$identity,
+      );
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$$UserSummaryModelImplToJson(this);
+  }
+}
+
+abstract class _UserSummaryModel implements UserSummaryModel {
+  const factory _UserSummaryModel({
+    required final int id,
+    required final String name,
+    final String? email,
+    final String? role,
+  }) = _$UserSummaryModelImpl;
+
+  factory _UserSummaryModel.fromJson(Map<String, dynamic> json) =
+      _$UserSummaryModelImpl.fromJson;
+
+  @override
+  int get id;
+  @override
+  String get name;
+  @override
+  String? get email;
+  @override
+  String? get role;
+
+  /// Create a copy of UserSummaryModel
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$UserSummaryModelImplCopyWith<_$UserSummaryModelImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+DeliveryModel _$DeliveryModelFromJson(Map<String, dynamic> json) {
+  return _DeliveryModel.fromJson(json);
+}
+
+/// @nodoc
+mixin _$DeliveryModel {
+  int get id => throw _privateConstructorUsedError;
+  @JsonKey(name: 'transaction_id')
+  int? get transactionId => throw _privateConstructorUsedError;
+  @JsonKey(name: 'recipient_name')
+  String? get recipientName => throw _privateConstructorUsedError;
+  String? get address => throw _privateConstructorUsedError;
+  String? get phone => throw _privateConstructorUsedError;
+  String? get status => throw _privateConstructorUsedError;
+  String? get notes => throw _privateConstructorUsedError;
+  @FlexibleNullableDoubleConverter()
+  double? get latitude => throw _privateConstructorUsedError;
+  @FlexibleNullableDoubleConverter()
+  double? get longitude => throw _privateConstructorUsedError;
+  @JsonKey(name: 'delivery_fee')
+  @FlexibleNullableDoubleConverter()
+  double? get deliveryFee => throw _privateConstructorUsedError;
+
+  /// Serializes this DeliveryModel to a JSON map.
+  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+
+  /// Create a copy of DeliveryModel
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  $DeliveryModelCopyWith<DeliveryModel> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class $DeliveryModelCopyWith<$Res> {
+  factory $DeliveryModelCopyWith(
+    DeliveryModel value,
+    $Res Function(DeliveryModel) then,
+  ) = _$DeliveryModelCopyWithImpl<$Res, DeliveryModel>;
+  @useResult
+  $Res call({
+    int id,
+    @JsonKey(name: 'transaction_id') int? transactionId,
+    @JsonKey(name: 'recipient_name') String? recipientName,
+    String? address,
+    String? phone,
+    String? status,
+    String? notes,
+    @FlexibleNullableDoubleConverter() double? latitude,
+    @FlexibleNullableDoubleConverter() double? longitude,
+    @JsonKey(name: 'delivery_fee')
+    @FlexibleNullableDoubleConverter()
+    double? deliveryFee,
+  });
+}
+
+/// @nodoc
+class _$DeliveryModelCopyWithImpl<$Res, $Val extends DeliveryModel>
+    implements $DeliveryModelCopyWith<$Res> {
+  _$DeliveryModelCopyWithImpl(this._value, this._then);
+
+  // ignore: unused_field
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
+
+  /// Create a copy of DeliveryModel
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? id = null,
+    Object? transactionId = freezed,
+    Object? recipientName = freezed,
+    Object? address = freezed,
+    Object? phone = freezed,
+    Object? status = freezed,
+    Object? notes = freezed,
+    Object? latitude = freezed,
+    Object? longitude = freezed,
+    Object? deliveryFee = freezed,
+  }) {
+    return _then(
+      _value.copyWith(
+            id: null == id
+                ? _value.id
+                : id // ignore: cast_nullable_to_non_nullable
+                      as int,
+            transactionId: freezed == transactionId
+                ? _value.transactionId
+                : transactionId // ignore: cast_nullable_to_non_nullable
+                      as int?,
+            recipientName: freezed == recipientName
+                ? _value.recipientName
+                : recipientName // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            address: freezed == address
+                ? _value.address
+                : address // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            phone: freezed == phone
+                ? _value.phone
+                : phone // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            status: freezed == status
+                ? _value.status
+                : status // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            notes: freezed == notes
+                ? _value.notes
+                : notes // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            latitude: freezed == latitude
+                ? _value.latitude
+                : latitude // ignore: cast_nullable_to_non_nullable
+                      as double?,
+            longitude: freezed == longitude
+                ? _value.longitude
+                : longitude // ignore: cast_nullable_to_non_nullable
+                      as double?,
+            deliveryFee: freezed == deliveryFee
+                ? _value.deliveryFee
+                : deliveryFee // ignore: cast_nullable_to_non_nullable
+                      as double?,
+          )
+          as $Val,
+    );
+  }
+}
+
+/// @nodoc
+abstract class _$$DeliveryModelImplCopyWith<$Res>
+    implements $DeliveryModelCopyWith<$Res> {
+  factory _$$DeliveryModelImplCopyWith(
+    _$DeliveryModelImpl value,
+    $Res Function(_$DeliveryModelImpl) then,
+  ) = __$$DeliveryModelImplCopyWithImpl<$Res>;
+  @override
+  @useResult
+  $Res call({
+    int id,
+    @JsonKey(name: 'transaction_id') int? transactionId,
+    @JsonKey(name: 'recipient_name') String? recipientName,
+    String? address,
+    String? phone,
+    String? status,
+    String? notes,
+    @FlexibleNullableDoubleConverter() double? latitude,
+    @FlexibleNullableDoubleConverter() double? longitude,
+    @JsonKey(name: 'delivery_fee')
+    @FlexibleNullableDoubleConverter()
+    double? deliveryFee,
+  });
+}
+
+/// @nodoc
+class __$$DeliveryModelImplCopyWithImpl<$Res>
+    extends _$DeliveryModelCopyWithImpl<$Res, _$DeliveryModelImpl>
+    implements _$$DeliveryModelImplCopyWith<$Res> {
+  __$$DeliveryModelImplCopyWithImpl(
+    _$DeliveryModelImpl _value,
+    $Res Function(_$DeliveryModelImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of DeliveryModel
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? id = null,
+    Object? transactionId = freezed,
+    Object? recipientName = freezed,
+    Object? address = freezed,
+    Object? phone = freezed,
+    Object? status = freezed,
+    Object? notes = freezed,
+    Object? latitude = freezed,
+    Object? longitude = freezed,
+    Object? deliveryFee = freezed,
+  }) {
+    return _then(
+      _$DeliveryModelImpl(
+        id: null == id
+            ? _value.id
+            : id // ignore: cast_nullable_to_non_nullable
+                  as int,
+        transactionId: freezed == transactionId
+            ? _value.transactionId
+            : transactionId // ignore: cast_nullable_to_non_nullable
+                  as int?,
+        recipientName: freezed == recipientName
+            ? _value.recipientName
+            : recipientName // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        address: freezed == address
+            ? _value.address
+            : address // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        phone: freezed == phone
+            ? _value.phone
+            : phone // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        status: freezed == status
+            ? _value.status
+            : status // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        notes: freezed == notes
+            ? _value.notes
+            : notes // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        latitude: freezed == latitude
+            ? _value.latitude
+            : latitude // ignore: cast_nullable_to_non_nullable
+                  as double?,
+        longitude: freezed == longitude
+            ? _value.longitude
+            : longitude // ignore: cast_nullable_to_non_nullable
+                  as double?,
+        deliveryFee: freezed == deliveryFee
+            ? _value.deliveryFee
+            : deliveryFee // ignore: cast_nullable_to_non_nullable
+                  as double?,
+      ),
+    );
+  }
+}
+
+/// @nodoc
+@JsonSerializable()
+class _$DeliveryModelImpl implements _DeliveryModel {
+  const _$DeliveryModelImpl({
+    required this.id,
+    @JsonKey(name: 'transaction_id') this.transactionId,
+    @JsonKey(name: 'recipient_name') this.recipientName,
+    this.address,
+    this.phone,
+    this.status,
+    this.notes,
+    @FlexibleNullableDoubleConverter() this.latitude,
+    @FlexibleNullableDoubleConverter() this.longitude,
+    @JsonKey(name: 'delivery_fee')
+    @FlexibleNullableDoubleConverter()
+    this.deliveryFee,
+  });
+
+  factory _$DeliveryModelImpl.fromJson(Map<String, dynamic> json) =>
+      _$$DeliveryModelImplFromJson(json);
+
+  @override
+  final int id;
+  @override
+  @JsonKey(name: 'transaction_id')
+  final int? transactionId;
+  @override
+  @JsonKey(name: 'recipient_name')
+  final String? recipientName;
+  @override
+  final String? address;
+  @override
+  final String? phone;
+  @override
+  final String? status;
+  @override
+  final String? notes;
+  @override
+  @FlexibleNullableDoubleConverter()
+  final double? latitude;
+  @override
+  @FlexibleNullableDoubleConverter()
+  final double? longitude;
+  @override
+  @JsonKey(name: 'delivery_fee')
+  @FlexibleNullableDoubleConverter()
+  final double? deliveryFee;
+
+  @override
+  String toString() {
+    return 'DeliveryModel(id: $id, transactionId: $transactionId, recipientName: $recipientName, address: $address, phone: $phone, status: $status, notes: $notes, latitude: $latitude, longitude: $longitude, deliveryFee: $deliveryFee)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$DeliveryModelImpl &&
+            (identical(other.id, id) || other.id == id) &&
+            (identical(other.transactionId, transactionId) ||
+                other.transactionId == transactionId) &&
+            (identical(other.recipientName, recipientName) ||
+                other.recipientName == recipientName) &&
+            (identical(other.address, address) || other.address == address) &&
+            (identical(other.phone, phone) || other.phone == phone) &&
+            (identical(other.status, status) || other.status == status) &&
+            (identical(other.notes, notes) || other.notes == notes) &&
+            (identical(other.latitude, latitude) ||
+                other.latitude == latitude) &&
+            (identical(other.longitude, longitude) ||
+                other.longitude == longitude) &&
+            (identical(other.deliveryFee, deliveryFee) ||
+                other.deliveryFee == deliveryFee));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(
+    runtimeType,
+    id,
+    transactionId,
+    recipientName,
+    address,
+    phone,
+    status,
+    notes,
+    latitude,
+    longitude,
+    deliveryFee,
+  );
+
+  /// Create a copy of DeliveryModel
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$DeliveryModelImplCopyWith<_$DeliveryModelImpl> get copyWith =>
+      __$$DeliveryModelImplCopyWithImpl<_$DeliveryModelImpl>(this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$$DeliveryModelImplToJson(this);
+  }
+}
+
+abstract class _DeliveryModel implements DeliveryModel {
+  const factory _DeliveryModel({
+    required final int id,
+    @JsonKey(name: 'transaction_id') final int? transactionId,
+    @JsonKey(name: 'recipient_name') final String? recipientName,
+    final String? address,
+    final String? phone,
+    final String? status,
+    final String? notes,
+    @FlexibleNullableDoubleConverter() final double? latitude,
+    @FlexibleNullableDoubleConverter() final double? longitude,
+    @JsonKey(name: 'delivery_fee')
+    @FlexibleNullableDoubleConverter()
+    final double? deliveryFee,
+  }) = _$DeliveryModelImpl;
+
+  factory _DeliveryModel.fromJson(Map<String, dynamic> json) =
+      _$DeliveryModelImpl.fromJson;
+
+  @override
+  int get id;
+  @override
+  @JsonKey(name: 'transaction_id')
+  int? get transactionId;
+  @override
+  @JsonKey(name: 'recipient_name')
+  String? get recipientName;
+  @override
+  String? get address;
+  @override
+  String? get phone;
+  @override
+  String? get status;
+  @override
+  String? get notes;
+  @override
+  @FlexibleNullableDoubleConverter()
+  double? get latitude;
+  @override
+  @FlexibleNullableDoubleConverter()
+  double? get longitude;
+  @override
+  @JsonKey(name: 'delivery_fee')
+  @FlexibleNullableDoubleConverter()
+  double? get deliveryFee;
+
+  /// Create a copy of DeliveryModel
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$DeliveryModelImplCopyWith<_$DeliveryModelImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
 

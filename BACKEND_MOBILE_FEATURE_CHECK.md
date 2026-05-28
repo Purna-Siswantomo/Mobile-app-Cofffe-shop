@@ -14,19 +14,19 @@ Sumber pengecekan:
 
 | Area Backend | Status di Mobile | Catatan |
 |---|---|---|
-| Auth API | Sudah masuk, perlu penyesuaian JSON key | Login/logout/me sudah dibuat, tapi response backend memakai `is_active` sedangkan mobile memakai `isActive`. |
-| Admin Dashboard API | Sudah masuk, perlu penyesuaian JSON key | Backend memakai `total_transactions_today`, `total_revenue_today`, `total_products`, `pending_orders`; mobile model memakai nama Indonesia camelCase. |
-| Products API | Sudah masuk, perlu penyesuaian JSON key/type | CRUD produk sudah dibuat, tapi backend memakai `image_url`, `created_at`, dan `price` sering berupa string decimal. |
-| Orders Kasir API | Sudah masuk sebagian, perlu penyesuaian model | Pending/confirm/cancel/update status sudah dibuat, tapi backend memakai field `total`/`grand_total`, bukan `total_amount`. |
-| Transactions API Admin | Endpoint ada, mobile belum punya screen/repository khusus | Mobile baru punya endpoint constant `/transactions`, belum ada transaction list/detail admin. |
-| Reports Web | UI route mobile ada placeholder, API belum ada | Backend reports masih web route, belum ada API report untuk mobile. |
-| Pusher Events | Sudah masuk, perlu mapping payload | Event `new-order` mengirim `transaction_id`, bukan `id`; mobile `OrderModel` butuh `id`. |
+| Auth API | Sudah sesuai | Login/logout/me sudah dibuat dan `is_active` sudah dimapping ke `isActive`. |
+| Admin Dashboard API | Sudah sesuai | Field dashboard snake_case backend sudah dimapping ke model mobile. |
+| Products API | Sudah sesuai untuk CRUD JSON | CRUD produk sudah dibuat, `image_url`, `created_at`, dan decimal string `price` sudah ditangani. Upload gambar file belum dibuat. |
+| Orders Kasir API | Sudah masuk cukup lengkap | Pending review, ready-to-confirm, in-progress, verify/reject payment, confirm, deliver, complete, cancel, dan POS sudah dibuat. |
+| Transactions API Admin | Sudah masuk sebagian besar | `TransactionModel`, repository, provider, filter report, list, dan detail transaksi sudah ada. |
+| Reports API Admin | Backend siap, mobile sebagian | Backend punya `/reports/summary` dan `/reports/export`; mobile masih memakai `/transactions` untuk laporan dasar. |
+| Reverb Events | Sudah masuk | Mobile memakai `web_socket_channel` ke Laravel Reverb dan `OrderModel` sudah menerima `transaction_id` sebagai id. |
 | Member Menu/Ordering | Belum masuk mobile | Backend fitur member masih web route, tidak ada API mobile. |
 | Favorites | Belum masuk mobile | Backend web only. |
-| Delivery | Belum masuk mobile | Backend web/kasir/member route, belum API mobile. |
-| Payment QRIS Upload/Verify | Belum masuk mobile | Backend web route. |
-| Admin User Management | Belum masuk mobile | Backend web route. |
-| Admin Notification Management | Belum masuk mobile | Backend web route. |
+| Delivery | Masuk sebagian | Mobile kasir bisa membaca data delivery dan mengubah status deliver/complete; backend admin delivery setting API sudah ada, mobile admin belum. |
+| Payment QRIS Upload/Verify | Masuk sebagian | Upload bukti masih dari web/member, tetapi kasir mobile sudah bisa melihat, verify, dan reject bukti pembayaran. |
+| Admin User Management | Backend API siap, mobile belum | API `/users` sudah tersedia untuk list/create/detail/update/toggle/delete. |
+| Admin Notification Management | Backend API siap, mobile belum | API `/notifications` dan `/notifications/broadcast` sudah tersedia. |
 | Profile Management | Belum masuk mobile | Backend web route. |
 
 ## API Backend yang Tersedia untuk Mobile
@@ -66,8 +66,8 @@ Base path:
 | GET | `/products/{id}` | `Api\ProductController@show` | `ProductRepository.getProduct()` |
 | PUT | `/products/{id}` | `Api\ProductController@update` | `ProductRepository.updateProduct()` |
 | DELETE | `/products/{id}` | `Api\ProductController@destroy` | `ProductRepository.deleteProduct()` |
-| GET | `/transactions` | `Api\TransactionController@index` | Belum dibuat repository/screen khusus |
-| GET | `/transactions/{id}` | `Api\TransactionController@show` | Belum dibuat repository/screen khusus |
+| GET | `/transactions` | `Api\TransactionController@index` | `TransactionRepository.getTransactions()` dan `ReportScreen` |
+| GET | `/transactions/{id}` | `Api\TransactionController@show` | `TransactionRepository.getTransaction()`, belum ada UI detail penuh |
 
 ### Kasir
 
@@ -379,22 +379,24 @@ admin
 Status:
 
 ```text
-Belum masuk sebagai fitur lengkap.
+Sudah masuk sebagai fitur dasar.
 ```
 
 Yang sudah ada:
 
 - Constant endpoint `/transactions`
-- Route `/admin/reports` placeholder
+- `TransactionModel`
+- `TransactionRepository`
+- `transactionProvider`
+- Route `/admin/reports`
+- `ReportScreen` yang menampilkan daftar transaksi dari `/transactions`
 
 Yang belum ada:
 
-- `TransactionModel`
-- `TransactionRepository`
-- Admin transaction list screen
 - Admin transaction detail screen
 - Filter status/date/from_date/to_date
-- Report integration dari transaksi
+- Export report
+- UI report yang setara dengan laporan web backend
 
 ## 6. Reports
 
@@ -409,30 +411,39 @@ GET  /admin/reports
 POST /admin/reports/export
 ```
 
+Di `routes/api.php`:
+
+```text
+GET /api/v1/reports/summary
+GET /api/v1/reports/export
+```
+
 ### Mobile
 
 Status:
 
 ```text
-Belum masuk.
+Masuk sebagian.
 ```
 
 Yang ada di mobile:
 
 ```text
-/admin/reports -> ReportScreen placeholder
+/admin/reports -> ReportScreen daftar transaksi dari endpoint /transactions
 ```
 
 Catatan:
 
 - Backend reports masih web/Blade route.
-- Belum ada API `/api/v1/reports`.
+- API mobile untuk summary/export rows sudah ada.
+- Mobile memakai `/api/v1/transactions` sebagai laporan dasar.
 
 Rekomendasi:
 
-- Buat API report di backend jika ingin fitur reports mobile.
+- Hubungkan mobile report ke `/api/v1/reports/summary` untuk ringkasan dan chart.
+- Gunakan `/api/v1/reports/export` untuk data export rows di mobile.
 
-## 7. Pusher Real-Time Order
+## 7. Laravel Reverb Real-Time Order
 
 ### Backend
 
@@ -483,34 +494,27 @@ Payload `order-status-updated`:
 Sudah masuk:
 
 ```text
-lib/core/services/pusher_service.dart
+lib/core/constants/websocket_constants.dart
+lib/core/services/laravel_websocket_service.dart
 lib/shared/widgets/connection_indicator.dart
 ```
 
 Status:
 
 ```text
-Sudah masuk, tetapi payload new-order perlu adapter.
+Sudah masuk.
 ```
 
 Catatan penting:
 
-- Mobile `OrderModel` butuh `id`.
-- Backend Pusher mengirim `transaction_id`.
-- Backend Pusher mengirim `total_amount`, sesuai mobile.
-- Backend Pusher tidak mengirim `status`; mobile `OrderModel` butuh `status`.
-- Backend Pusher tidak mengirim `payment_method`; mobile nullable aman.
+- Mobile `OrderModel` sudah membaca `transaction_id` sebagai `id`.
+- Backend Reverb event mengirim `total_amount`, sesuai mobile.
+- Backend event tidak mengirim `status`; mobile memberi default `pending`.
+- Backend Reverb event tidak mengirim `payment_method`; mobile nullable aman.
 
 Rekomendasi:
 
-Saat menerima `new-order`, ubah payload:
-
-```text
-transaction_id -> id
-status default -> pending
-```
-
-Atau setelah event `new-order`, langsung invalidate `pendingOrdersProvider` agar mobile fetch ulang dari API.
+Saat menerima `new-order`, mobile sekarang bisa langsung parse payload. Untuk data penuh, mobile juga tetap melakukan polling fallback dan invalidate provider pada event status.
 
 ## 8. Delivery
 
@@ -537,13 +541,21 @@ app/Http/Controllers/Admin/DeliverySettingController.php
 Status:
 
 ```text
-Belum masuk.
+Masuk sebagian untuk order delivery kasir.
 ```
 
 Catatan:
 
-- Belum ada API mobile untuk delivery.
-- Belum ada screen mobile delivery.
+- `OrderModel` sudah punya `delivery`.
+- Kasir bisa menandai delivery order sebagai `delivering` dan `completed`.
+- Backend API admin untuk setting delivery sudah tersedia:
+
+```text
+GET   /api/v1/settings/delivery
+PATCH /api/v1/settings/delivery
+```
+
+- Mobile admin untuk setting delivery belum dibuat.
 
 ## 9. Payment QRIS
 
@@ -563,12 +575,14 @@ POST /transactions/{transaction}/payment/reject
 Status:
 
 ```text
-Belum masuk.
+Masuk sebagian.
 ```
 
 Catatan:
 
-- Belum ada API mobile untuk upload/verifikasi bukti pembayaran.
+- Mobile kasir sudah memakai API verify/reject pembayaran.
+- Mobile kasir sudah menampilkan `payment_proof_url` jika tersedia.
+- Upload bukti pembayaran dari sisi member/customer mobile belum ada karena mobile member belum dibuat.
 
 ## 10. Member Menu, Cart, Favorites, My Orders
 
@@ -613,17 +627,29 @@ admin/users
 admin/users/{user}/toggle
 ```
 
+Route API:
+
+```text
+GET    /api/v1/users
+POST   /api/v1/users
+GET    /api/v1/users/{id}
+PUT    /api/v1/users/{id}
+PATCH  /api/v1/users/{id}/toggle
+DELETE /api/v1/users/{id}
+```
+
 ### Mobile
 
 Status:
 
 ```text
-Belum masuk.
+Backend API siap, mobile belum masuk.
 ```
 
 Catatan:
 
-- Belum ada API mobile untuk user management.
+- API mendukung search, role, status, stats, create, update, toggle active, delete, dan detail user.
+- Mobile admin screen/repository/provider belum dibuat.
 
 ## 12. Admin Notification Management
 
@@ -638,18 +664,30 @@ admin/notifications/broadcast
 notifications/{notification}/dismiss
 ```
 
+Route API:
+
+```text
+GET    /api/v1/notifications
+POST   /api/v1/notifications
+POST   /api/v1/notifications/broadcast
+GET    /api/v1/notifications/{id}
+PUT    /api/v1/notifications/{id}
+PATCH  /api/v1/notifications/{id}/toggle
+DELETE /api/v1/notifications/{id}
+```
+
 ### Mobile
 
 Status:
 
 ```text
-Belum masuk.
+Backend API siap, mobile belum masuk.
 ```
 
 Catatan:
 
-- Mobile hanya menerima real-time order via Pusher.
-- Notification management belum dibuat.
+- Mobile menerima real-time order via Laravel Reverb.
+- Notification management mobile admin belum dibuat.
 
 ## 13. Profile Management
 
@@ -719,7 +757,7 @@ Perlu converter:
 String/int/double -> double
 ```
 
-## C. Order Detail Item Belum Dimodelkan
+## C. Order Detail Item
 
 Backend mengirim:
 
@@ -729,7 +767,7 @@ details[].quantity
 details[].subtotal
 ```
 
-Mobile belum punya:
+Mobile sudah punya:
 
 ```text
 OrderItemModel
@@ -737,7 +775,8 @@ OrderItemModel
 
 Dampak:
 
-- `OrderDetailScreen` masih placeholder untuk item pesanan.
+- `OrderDetailScreen` dapat menampilkan item pesanan jika `details` dikirim backend.
+- Jika `details` kosong, mobile menampilkan empty state.
 
 ## D. Status Cancel Berbeda
 
@@ -755,7 +794,7 @@ cancelled
 
 Perlu dukung dua-duanya.
 
-## E. Pusher Payload Mismatch
+## E. Reverb Payload
 
 Backend `new-order` mengirim:
 
@@ -763,7 +802,7 @@ Backend `new-order` mengirim:
 transaction_id
 ```
 
-Mobile butuh:
+Mobile membaca:
 
 ```text
 id
@@ -771,8 +810,8 @@ id
 
 Solusi:
 
-- map `transaction_id` ke `id`, atau
-- event hanya memicu refresh pending orders.
+- `OrderModel` sudah map `transaction_id` ke `id`.
+- Provider tetap di-refresh pada event status agar list sesuai backend.
 
 ## Kesimpulan
 
@@ -784,7 +823,7 @@ Fitur backend yang sudah masuk ke mobile:
 - Kasir pending order
 - Kasir confirm/cancel order
 - Kasir update status transaction
-- Pusher real-time order event
+- Laravel Reverb real-time order event
 - Role-based routing admin/kasir
 
 Fitur backend yang belum masuk ke mobile:
@@ -793,8 +832,8 @@ Fitur backend yang belum masuk ke mobile:
 - Reports API/full report screen
 - Member menu/cart/order
 - Favorites
-- Delivery management
-- Payment upload/verification
+- Delivery management penuh
+- Payment proof upload dari customer mobile
 - Admin user management
 - Admin notification management
 - Profile edit/delete
@@ -804,5 +843,5 @@ Prioritas perbaikan sebelum integrasi live:
 1. Perbaiki JSON mapping model mobile.
 2. Tambahkan converter decimal string ke double.
 3. Tambahkan `OrderItemModel` dan mapping `details`.
-4. Sesuaikan Pusher payload `transaction_id`.
-5. Tambahkan repository/screen transactions dan reports jika dibutuhkan admin mobile.
+4. Uji realtime end-to-end dengan API server, Reverb server, dan queue worker aktif.
+5. Lengkapi filter/detail/export transaksi untuk admin mobile.

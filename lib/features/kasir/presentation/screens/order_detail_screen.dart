@@ -17,11 +17,16 @@ class OrderDetailScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final ordersState = ref.watch(pendingOrdersProvider);
+    final id = orderId;
+    final orderState = id == null
+        ? const AsyncValue<OrderModel?>.data(null)
+        : ref
+              .watch(orderDetailProvider(id))
+              .whenData<OrderModel?>((order) => order);
 
     return Scaffold(
       appBar: AppBar(title: Text('Order #${orderId ?? '-'}')),
-      body: ordersState.when(
+      body: orderState.when(
         loading: () => ListView(
           padding: const EdgeInsets.all(16),
           children: const [
@@ -33,12 +38,13 @@ class OrderDetailScreen extends ConsumerWidget {
         ),
         error: (error, _) => AppErrorWidget(
           error: error,
-          onRetry: () =>
-              ref.read(pendingOrdersProvider.notifier).fetchPending(),
+          onRetry: () {
+            if (id != null) {
+              ref.invalidate(orderDetailProvider(id));
+            }
+          },
         ),
-        data: (orders) {
-          final order = _findOrder(orders, orderId);
-
+        data: (order) {
           if (order == null) {
             return const EmptyStateWidget(
               icon: Icons.search_off_outlined,
@@ -51,20 +57,6 @@ class OrderDetailScreen extends ConsumerWidget {
         },
       ),
     );
-  }
-
-  OrderModel? _findOrder(List<OrderModel> orders, int? id) {
-    if (id == null) {
-      return null;
-    }
-
-    for (final order in orders) {
-      if (order.id == id) {
-        return order;
-      }
-    }
-
-    return null;
   }
 }
 
@@ -115,13 +107,57 @@ class _OrderDetailContent extends ConsumerWidget {
                   value: order.paymentMethod ?? 'Belum dipilih',
                 ),
                 _DetailRow(
+                  label: 'Status bayar',
+                  value: order.paymentStatusLabel,
+                ),
+                _DetailRow(label: 'Tipe', value: order.orderTypeLabel),
+                if (order.tableNumber != null)
+                  _DetailRow(label: 'Meja', value: order.tableNumber!),
+                if (order.user?.name != null)
+                  _DetailRow(label: 'Customer', value: order.user!.name),
+                if (order.notes != null)
+                  _DetailRow(label: 'Catatan', value: order.notes!),
+                _DetailRow(
                   label: 'Waktu masuk',
                   value: _formatCreatedAt(order.createdAt),
                 ),
+                if (order.delivery != null) ...[
+                  const Divider(),
+                  _DetailRow(
+                    label: 'Penerima',
+                    value: order.delivery!.recipientName ?? '-',
+                  ),
+                  _DetailRow(label: 'HP', value: order.delivery!.phone ?? '-'),
+                  _DetailRow(
+                    label: 'Alamat',
+                    value: order.delivery!.address ?? '-',
+                  ),
+                ],
               ],
             ),
           ),
         ),
+        if (order.paymentProofUrl != null) ...[
+          const SizedBox(height: 16),
+          Text(
+            'Bukti Pembayaran',
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
+          const SizedBox(height: 8),
+          Card(
+            clipBehavior: Clip.antiAlias,
+            child: Image.network(
+              order.paymentProofUrl!,
+              height: 240,
+              width: double.infinity,
+              fit: BoxFit.contain,
+              errorBuilder: (_, __, ___) => const Padding(
+                padding: EdgeInsets.all(24),
+                child: Text('Bukti pembayaran gagal dimuat.'),
+              ),
+            ),
+          ),
+        ],
         const SizedBox(height: 16),
         Text('Item Pesanan', style: Theme.of(context).textTheme.titleMedium),
         const SizedBox(height: 8),

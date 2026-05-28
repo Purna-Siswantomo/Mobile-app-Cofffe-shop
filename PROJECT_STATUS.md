@@ -2,11 +2,13 @@
 
 Dokumen ini menjelaskan sejauh mana project **Arpul Mobile** dan backend **Arpul-Coffee-shop** sudah berjalan. Status ini dibuat sebagai catatan dokumentasi karena project belum selesai sepenuhnya, terutama pada bagian flow order di mobile.
 
+Audit detail flow kasir backend web vs mobile ada di [KASIR_FLOW_BACKEND_GAP.md](KASIR_FLOW_BACKEND_GAP.md).
+
 ## Ringkasan
 
-Project sudah memiliki fondasi backend Laravel dan aplikasi Flutter mobile untuk role **admin** dan **kasir**. Mobile sudah bisa login, membaca role user, mengakses endpoint API utama, menampilkan dashboard admin, menampilkan produk, dan menerima order pending untuk kasir.
+Project sudah memiliki fondasi backend Laravel dan aplikasi Flutter mobile untuk role **admin** dan **kasir**. Mobile sudah bisa login, membaca role user, mengakses endpoint API utama, menampilkan dashboard admin, menampilkan produk, membaca transaksi admin dasar, dan menjalankan flow kasir utama.
 
-Namun aplikasi belum bisa dianggap selesai. Bagian mobile untuk kasir masih perlu dilengkapi, terutama detail proses order, bukti pembayaran/order, validasi status, dan workflow kasir setelah order diterima.
+Namun aplikasi belum bisa dianggap selesai. Bagian mobile masih perlu dilengkapi untuk kualitas operasional penuh, terutama detail laporan admin, route list order kasir, UX detail order, upload gambar produk, dan uji end-to-end realtime di device.
 
 ## Kondisi Backend
 
@@ -35,8 +37,18 @@ GET    /api/v1/products/{id}
 PUT    /api/v1/products/{id}
 DELETE /api/v1/products/{id}
 GET    /api/v1/orders/pending
+GET    /api/v1/orders/pending-review
+GET    /api/v1/orders/ready-to-confirm
+GET    /api/v1/orders/in-progress
+GET    /api/v1/orders/{id}
+POST   /api/v1/orders/{id}/payment/verify
+POST   /api/v1/orders/{id}/payment/reject
 POST   /api/v1/orders/{id}/confirm
+POST   /api/v1/orders/{id}/deliver
+POST   /api/v1/orders/{id}/complete
 POST   /api/v1/orders/{id}/cancel
+GET    /api/v1/pos/products
+POST   /api/v1/pos/transactions
 GET    /api/v1/transactions
 GET    /api/v1/transactions/{id}
 PATCH  /api/v1/transactions/{id}/status
@@ -171,7 +183,7 @@ Sudah dibuat:
 - Product card dengan gambar, harga, kategori, stok, edit, dan hapus.
 - Product create/edit form.
 - Repository dan provider untuk dashboard dan produk.
-- Placeholder/navigation untuk reports.
+- Reports admin dasar dari endpoint transaksi.
 
 Status:
 
@@ -181,8 +193,8 @@ Sebagian besar admin sudah masuk untuk MVP.
 
 Yang belum selesai:
 
-- Reports admin belum lengkap.
-- Transaction list dan transaction detail admin belum dibuat penuh.
+- Reports admin mobile sudah punya filter dan detail transaksi, tetapi belum memakai API summary/export baru.
+- User management, notification management, dan delivery setting admin belum dibuat di mobile meskipun backend API sudah siap.
 - Upload gambar produk masih placeholder.
 - Validasi form produk masih basic.
 
@@ -191,7 +203,7 @@ Yang belum selesai:
 Sudah dibuat:
 
 - Kasir dashboard.
-- Ambil daftar pending order dari `/orders/pending`.
+- Ambil daftar order dari `/orders/pending-review`, `/orders/ready-to-confirm`, dan `/orders/in-progress`.
 - Realtime listener order baru dari Laravel Reverb.
 - Indikator koneksi realtime di AppBar.
 - Banner mode offline jika realtime disconnected.
@@ -199,31 +211,28 @@ Sudah dibuat:
 - Loading shimmer.
 - Empty state ketika belum ada pesanan.
 - Order card.
-- Tombol konfirmasi dan batalkan.
+- Tombol verifikasi/tolak pembayaran.
+- Tombol konfirmasi, deliver, complete, dan batalkan.
 - Modal konfirmasi sebelum aksi.
-- Order detail screen dasar.
+- Order detail screen dengan item, customer, delivery, dan bukti pembayaran jika tersedia.
+- POS cash sederhana dengan keranjang, paid amount, dan kembalian.
 
 Status:
 
 ```text
-Kasir baru sampai tahap menerima order dan aksi dasar.
-Belum lengkap untuk flow operasional kasir end-to-end.
+Flow kasir utama sudah masuk untuk MVP, tetapi belum dipoles untuk operasional penuh.
 ```
 
 Yang masih kurang di kasir:
 
-- Detail order masih perlu diperbaiki agar sesuai data real dari backend.
-- Bukti order atau bukti pembayaran belum ditampilkan lengkap di mobile.
-- Jika order memakai pembayaran online/QRIS, mobile belum menampilkan bukti transfer/upload payment proof.
-- Belum ada flow kasir untuk memverifikasi bukti pembayaran.
-- Belum ada tampilan status order yang lengkap dari pending sampai selesai.
-- Belum ada proses finalisasi order yang jelas setelah order dikonfirmasi.
+- Route `/kasir/orders` masih placeholder list sederhana.
+- Action di detail order belum selengkap action pada tab/card kasir.
 - Belum ada riwayat order kasir yang sudah diproses.
 - Belum ada filter/search order.
 - Belum ada notifikasi visual/audio yang matang ketika order baru masuk.
 - Cancel order masih basic dan perlu UX alasan pembatalan yang lebih baik.
 
-Dengan kondisi sekarang, kasir sudah bisa melihat order masuk, tetapi belum cukup lengkap untuk dipakai sebagai sistem kasir harian tanpa perbaikan lanjutan.
+Dengan kondisi sekarang, kasir sudah bisa menjalankan flow utama, tetapi masih perlu pengujian manual dengan data real dan penyempurnaan UX sebelum dipakai sebagai sistem kasir harian.
 
 ### 6. Realtime Order
 
@@ -323,32 +332,35 @@ Catatan:
 
 Project belum selesai karena beberapa fitur penting belum lengkap:
 
-- Mobile kasir belum lengkap untuk memproses order dari awal sampai akhir.
-- Bukti order/pembayaran belum ditampilkan dan belum diverifikasi dari mobile.
-- Admin reports belum lengkap.
-- Transaction list/detail admin belum penuh.
+- Mobile kasir sudah punya flow utama, tetapi route list, detail action, riwayat, filter/search, dan notifikasi masih perlu dilengkapi.
+- Bukti pembayaran sudah bisa ditampilkan dan diverifikasi dari card/list kasir, tetapi UX detail masih perlu diseragamkan.
+- Admin reports belum memakai API summary/export baru.
+- Admin user management, notification management, dan delivery setting belum masuk mobile.
 - Upload gambar produk belum dikerjakan.
 - Member/customer mobile belum dibuat.
-- Fitur favorite, delivery, payment proof, dan profile masih dominan di backend/web, belum masuk mobile.
+- Fitur favorite, profile, delivery management penuh, dan upload payment proof dari customer masih dominan di backend/web, belum masuk mobile.
 - Belum ada konfigurasi production final untuk domain, HTTPS, signing APK, dan Reverb production.
 
 ## Prioritas Pekerjaan Berikutnya
 
 Urutan pengerjaan yang disarankan:
 
-1. Perbaiki model dan UI detail order kasir agar menampilkan data real lengkap.
-2. Tambahkan tampilan bukti pembayaran/order di mobile.
-3. Tambahkan aksi kasir untuk verifikasi pembayaran jika backend mendukung.
-4. Lengkapi status order: pending, confirmed, completed, cancelled.
-5. Tambahkan riwayat order kasir.
-6. Lengkapi reports admin dan transaction list/detail.
-7. Tambahkan upload gambar produk.
-8. Uji realtime end-to-end dari order dibuat sampai muncul di dashboard kasir.
-9. Siapkan konfigurasi APK release untuk HP fisik.
-10. Siapkan konfigurasi production: domain API, HTTPS, dan Reverb production.
+1. Lengkapi route `/kasir/orders` agar bukan placeholder.
+2. Seragamkan action di detail order dengan tab kasir: verify/reject, confirm, deliver, complete, cancel.
+3. Uji manual flow real: member order, upload bukti, verify, confirm, deliver/complete, cancel, dan POS cash.
+4. Tambahkan riwayat order kasir.
+5. Tambahkan filter/search order.
+6. Hubungkan reports admin ke API `/reports/summary` dan `/reports/export`.
+7. Tambahkan mobile admin user management dari API `/users`.
+8. Tambahkan mobile admin notification management dari API `/notifications`.
+9. Tambahkan mobile admin delivery setting dari API `/settings/delivery`.
+10. Tambahkan upload gambar produk.
+11. Uji realtime end-to-end dari order dibuat sampai muncul di dashboard kasir.
+12. Siapkan konfigurasi APK release untuk HP fisik.
+13. Siapkan konfigurasi production: domain API, HTTPS, dan Reverb production.
 
 ## Kesimpulan
 
-Project Arpul sudah memiliki pondasi yang cukup kuat untuk MVP mobile admin dan kasir. Backend API sudah tersedia, mobile sudah terhubung ke endpoint utama, dan realtime order sudah disiapkan menggunakan Laravel Reverb.
+Project Arpul sudah memiliki pondasi yang cukup kuat untuk MVP mobile admin dan kasir. Backend API sudah tersedia, mobile sudah terhubung ke endpoint utama, flow kasir utama sudah masuk, dan realtime order sudah disiapkan menggunakan Laravel Reverb.
 
-Namun project belum finish. Bagian kasir saat ini baru bisa menerima order dan melakukan aksi dasar. Untuk bisa digunakan operasional penuh, mobile masih perlu menyelesaikan detail order, bukti pembayaran/order, verifikasi pembayaran, status order lengkap, dan riwayat order.
+Namun project belum finish. Untuk bisa digunakan operasional penuh, mobile masih perlu menyelesaikan route list kasir, konsistensi action detail order, riwayat/filter, admin user/notification/delivery settings, report summary/export, upload gambar produk, dan pengujian end-to-end dengan backend + Reverb + queue worker.

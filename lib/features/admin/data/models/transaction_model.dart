@@ -19,12 +19,16 @@ class TransactionModel with _$TransactionModel {
     @JsonKey(name: 'payment_method') String? paymentMethod,
     @JsonKey(name: 'payment_status') String? paymentStatus,
     @FlexibleDoubleConverter() required double total,
+    @JsonKey(name: 'paid_amount')
+    @FlexibleNullableDoubleConverter()
+    double? paidAmount,
     @JsonKey(name: 'grand_total')
     @FlexibleNullableDoubleConverter()
     double? grandTotal,
     required String status,
     @JsonKey(name: 'table_number') String? tableNumber,
     String? notes,
+    UserSummaryModel? user,
     @JsonKey(name: 'created_at') required String createdAt,
     @Default(<OrderItemModel>[]) List<OrderItemModel> details,
   }) = _TransactionModel;
@@ -34,12 +38,32 @@ class TransactionModel with _$TransactionModel {
 
   double get displayTotal => grandTotal ?? total;
 
+  double get displayPaidAmount => paidAmount ?? 0;
+
+  int get itemCount => details.length;
+
   String get statusLabel => switch (status) {
     'pending' => 'Menunggu',
+    'in_progress' => 'Diproses',
+    'delivering' => 'Diantar',
     'confirmed' => 'Dikonfirmasi',
     'completed' => 'Selesai',
     'paid' => 'Dibayar',
     'cancelled' || 'canceled' => 'Dibatalkan',
     _ => status,
+  };
+
+  String get paymentStatusLabel => switch (paymentStatus) {
+    'pending_payment' => 'Belum Bayar',
+    'awaiting_review' => 'Cek Bukti',
+    'verified' => 'Terverifikasi',
+    'rejected' => 'Ditolak',
+    _ => paymentStatus ?? '-',
+  };
+
+  String get orderTypeLabel => switch (orderType) {
+    'delivery' => 'Delivery',
+    'dinein' => 'Dine-in',
+    _ => orderType ?? '-',
   };
 }

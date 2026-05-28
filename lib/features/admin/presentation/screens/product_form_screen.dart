@@ -21,6 +21,7 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
   final _nameController = TextEditingController();
   final _categoryController = TextEditingController();
   final _descriptionController = TextEditingController();
+  final _imageUrlController = TextEditingController();
   final _priceController = TextEditingController();
   final _stockController = TextEditingController();
   bool _isSaving = false;
@@ -33,6 +34,7 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
     _nameController.dispose();
     _categoryController.dispose();
     _descriptionController.dispose();
+    _imageUrlController.dispose();
     _priceController.dispose();
     _stockController.dispose();
     super.dispose();
@@ -64,6 +66,7 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
                 _nameController.text = product.name;
                 _categoryController.text = product.category;
                 _descriptionController.text = product.description ?? '';
+                _imageUrlController.text = product.imageUrl ?? '';
                 _priceController.text = product.price.toStringAsFixed(0);
                 _stockController.text = product.stock.toString();
                 _isInitialized = true;
@@ -87,6 +90,16 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
             children: [
               const _ImagePlaceholder(),
               const SizedBox(height: 16),
+              TextFormField(
+                controller: _imageUrlController,
+                enabled: !_isSaving,
+                textInputAction: TextInputAction.next,
+                decoration: const InputDecoration(
+                  labelText: 'URL gambar',
+                  prefixIcon: Icon(Icons.image_outlined),
+                ),
+              ),
+              const SizedBox(height: 12),
               TextFormField(
                 controller: _nameController,
                 enabled: !_isSaving,
@@ -193,6 +206,8 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
       'name': _nameController.text.trim(),
       'category': _categoryController.text.trim(),
       'description': _descriptionController.text.trim(),
+      if (_imageUrlController.text.trim().isNotEmpty)
+        'image_url': _imageUrlController.text.trim(),
       'price': double.parse(_priceController.text),
       'stock': int.parse(_stockController.text),
     };
@@ -246,7 +261,7 @@ class _ImagePlaceholder extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              'Upload gambar belum tersedia',
+              'Isi URL gambar untuk menampilkan foto produk',
               style: Theme.of(context).textTheme.bodyMedium,
             ),
           ],

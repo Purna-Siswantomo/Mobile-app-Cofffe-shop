@@ -16,10 +16,23 @@ C:\Users\Purna Siswantomo\Documents\bekas project\arpul_mobile
 Backend yang diasumsikan:
 
 ```text
-http://10.0.2.2:8000/api/v1
+http://10.0.2.2:8001/api/v1
 ```
 
 `10.0.2.2` digunakan agar Android emulator dapat mengakses localhost dari komputer host.
+
+## Update Audit Terbaru
+
+Dokumen awal ini sudah diperbarui setelah pengecekan ulang terhadap kode `arpul_mobile` dan backend `Arpul-Coffee-shop`.
+
+Perubahan penting dari summary awal:
+
+- Base URL development sekarang memakai port `8001`.
+- Realtime tidak lagi memakai package `pusher_channels_flutter`; mobile memakai Laravel Reverb/self-hosted WebSocket melalui `web_socket_channel`.
+- Model JSON sudah disesuaikan dengan backend untuk field snake_case dan numeric string.
+- Flow kasir sudah diperluas: pending review, verifikasi/tolak pembayaran, ready-to-confirm, in-progress, deliver, complete, cancel, dan POS cash.
+- Admin reports sudah terhubung ke endpoint transaksi sebagai list dasar, walaupun filter/export/detail penuh belum selesai.
+- Backend API admin sudah diperluas untuk user management, notification management, delivery setting, report summary, dan report export rows. Mobile admin untuk fitur-fitur itu belum dibuat kecuali report/transaksi dasar.
 
 ## Inisialisasi Project
 
@@ -39,7 +52,7 @@ Dependencies utama yang ditambahkan:
 - `go_router`
 - `json_annotation`
 - `freezed_annotation`
-- `pusher_channels_flutter`
+- `web_socket_channel`
 - `cached_network_image`
 - `intl`
 - `shimmer`
@@ -58,21 +71,21 @@ File constants yang dibuat:
 ```text
 lib/core/constants/api_constants.dart
 lib/core/constants/app_constants.dart
-lib/core/constants/pusher_constants.dart
+lib/core/constants/websocket_constants.dart
 ```
 
 Konfigurasi penting:
 
-- Base URL development: `http://10.0.2.2:8000/api/v1`
-- Base URL production placeholder: `https://your-domain.com/api/v1`
+- Base URL development: `http://10.0.2.2:8001/api/v1`
+- Base URL local host/desktop: `http://127.0.0.1:8001/api/v1`
 - Endpoint auth, dashboard, produk, transaksi, dan order
 - App name: `Arpul`
 - Token key: `sanctum_token`
 - User key: `user_data`
 - Role: `admin`, `kasir`
 - Timeout request: 15 detik
-- Pusher channel: `orders`
-- Pusher event:
+- Reverb/Pusher-protocol channel: `orders`
+- Reverb/Pusher-protocol event:
   - `new-order`
   - `order-status-updated`
 
@@ -267,7 +280,7 @@ Fitur provider:
 - Auto refresh dashboard stats setiap 30 detik
 - Fetch pending orders
 - Optimistic update saat confirm/cancel order
-- Add new order dari Pusher
+- Add new order dari Laravel Reverb/WebSocket
 
 ## Routing
 
@@ -392,7 +405,7 @@ Fitur:
 - Tombol logout
 - Badge counter order pending
 - Indicator koneksi real-time
-- Banner `Mode offline` saat Pusher disconnected
+- Banner `Mode offline` saat realtime disconnected
 - List pending order
 - Pull-to-refresh
 - Shimmer loading
@@ -434,7 +447,7 @@ Fitur:
 - Metode pembayaran
 - Waktu masuk
 - Tombol aksi sesuai status
-- Section item pesanan masih placeholder karena `OrderModel` belum memiliki field daftar item
+- Section item pesanan membaca `details` dari backend; jika backend tidak mengirim item, empty state ditampilkan
 
 ## Admin Screens
 
@@ -513,12 +526,13 @@ Fitur:
   - pop screen
   - invalidate `productsProvider`
 
-## Real-Time Pusher
+## Real-Time Laravel Reverb
 
 File:
 
 ```text
-lib/core/services/pusher_service.dart
+lib/core/constants/websocket_constants.dart
+lib/core/services/laravel_websocket_service.dart
 ```
 
 Fitur:
@@ -538,12 +552,12 @@ Fitur:
   - connecting
   - connected
   - disconnected
-- `PusherService.mock()` untuk fake order setiap 10 detik saat development
+- `LaravelWebSocketService.mock()` untuk fake order setiap 10 detik saat development
 
 Kasir dashboard sudah:
 
-- memanggil `PusherService().init()` di `initState`
-- memanggil `PusherService().disconnect()` di `dispose`
+- memanggil `LaravelWebSocketService().init(ref)` di `initState`
+- memanggil `LaravelWebSocketService().disconnect()` di `dispose`
 - menampilkan connection indicator
 - menampilkan banner offline
 
@@ -649,7 +663,7 @@ Berisi:
 - cara run emulator
 - cara build APK debug
 - credential testing admin/kasir
-- catatan Pusher setup
+- catatan Laravel Reverb/WebSocket setup
 - catatan cleartext traffic untuk development
 
 ## Status Akhir
@@ -677,7 +691,7 @@ Yang sudah selesai:
 - Admin dashboard
 - Product list
 - Product form
-- Pusher real-time service
+- Laravel Reverb real-time service
 - Android permission
 - Unit test
 - README
@@ -689,10 +703,12 @@ Pekerjaan berikutnya:
 
 - Integrasi langsung dengan backend Laravel live
 - Sesuaikan parsing JSON jika response backend berbeda
-- Tambahkan model detail item order
-- Implementasi reports screen penuh
+- Implementasi mobile admin user management dari API `/users`
+- Implementasi mobile admin notification management dari API `/notifications`
+- Implementasi mobile admin delivery setting dari API `/settings/delivery`
+- Lengkapi reports screen dengan `/reports/summary` dan `/reports/export`
 - Implementasi upload gambar produk
-- Konfigurasi Pusher key asli
+- Konfigurasi Reverb key/host/port untuk environment target
 - Setup environment dev/prod
 - Build release APK/AAB
 - Konfigurasi app signing

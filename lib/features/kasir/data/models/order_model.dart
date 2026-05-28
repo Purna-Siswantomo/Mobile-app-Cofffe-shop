@@ -18,7 +18,15 @@ class OrderModel with _$OrderModel {
     @FlexibleDoubleConverter()
     required double totalAmount,
     @Default('pending') String status,
+    @JsonKey(name: 'order_type') String? orderType,
     @JsonKey(name: 'payment_method') String? paymentMethod,
+    @JsonKey(name: 'payment_status') String? paymentStatus,
+    @JsonKey(name: 'payment_proof') String? paymentProof,
+    @JsonKey(name: 'payment_proof_url') String? paymentProofUrl,
+    @JsonKey(name: 'table_number') String? tableNumber,
+    String? notes,
+    UserSummaryModel? user,
+    DeliveryModel? delivery,
     @JsonKey(name: 'created_at') required String createdAt,
     @JsonKey(readValue: _readItemCount) int? itemCount,
     @Default(<OrderItemModel>[]) List<OrderItemModel> details,
@@ -34,10 +42,62 @@ class OrderModel with _$OrderModel {
   String get statusLabel => switch (status) {
     'pending' => 'Menunggu',
     'confirmed' => 'Dikonfirmasi',
+    'in_progress' => 'Diproses',
+    'delivering' => 'Diantar',
     'completed' => 'Selesai',
+    'paid' => 'Dibayar',
     'cancelled' || 'canceled' => 'Dibatalkan',
+    'pending_payment' => 'Menunggu Bayar',
     _ => status,
   };
+
+  String get paymentStatusLabel => switch (paymentStatus) {
+    'pending_payment' => 'Belum Bayar',
+    'awaiting_review' => 'Cek Bukti',
+    'verified' => 'Terverifikasi',
+    'rejected' => 'Ditolak',
+    _ => paymentStatus ?? '-',
+  };
+
+  String get orderTypeLabel => switch (orderType) {
+    'delivery' => 'Delivery',
+    'dinein' => 'Dine-in',
+    _ => orderType ?? '-',
+  };
+}
+
+@freezed
+class UserSummaryModel with _$UserSummaryModel {
+  const factory UserSummaryModel({
+    required int id,
+    required String name,
+    String? email,
+    String? role,
+  }) = _UserSummaryModel;
+
+  factory UserSummaryModel.fromJson(Map<String, dynamic> json) =>
+      _$UserSummaryModelFromJson(json);
+}
+
+@freezed
+class DeliveryModel with _$DeliveryModel {
+  const factory DeliveryModel({
+    required int id,
+    @JsonKey(name: 'transaction_id') int? transactionId,
+    @JsonKey(name: 'recipient_name') String? recipientName,
+    String? address,
+    String? phone,
+    String? status,
+    String? notes,
+    @FlexibleNullableDoubleConverter() double? latitude,
+    @FlexibleNullableDoubleConverter() double? longitude,
+    @JsonKey(name: 'delivery_fee')
+    @FlexibleNullableDoubleConverter()
+    double? deliveryFee,
+  }) = _DeliveryModel;
+
+  factory DeliveryModel.fromJson(Map<String, dynamic> json) =>
+      _$DeliveryModelFromJson(json);
 }
 
 @freezed

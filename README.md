@@ -11,6 +11,7 @@ Status progress terbaru project ada di [PROJECT_STATUS.md](PROJECT_STATUS.md).
 - Dashboard admin
 - CRUD produk admin
 - Reports admin dari endpoint transaksi
+- Backend API admin siap untuk user management, notification management, delivery setting, report summary, dan export rows
 - Dashboard kasir
 - Pending order list
 - Confirm/cancel order
@@ -350,15 +351,42 @@ PUT    /products/{id}
 DELETE /products/{id}
 GET    /transactions
 GET    /transactions/{id}
+GET    /reports/summary
+GET    /reports/export
+GET    /users
+POST   /users
+GET    /users/{id}
+PUT    /users/{id}
+PATCH  /users/{id}/toggle
+DELETE /users/{id}
+GET    /notifications
+POST   /notifications
+POST   /notifications/broadcast
+GET    /notifications/{id}
+PUT    /notifications/{id}
+PATCH  /notifications/{id}/toggle
+DELETE /notifications/{id}
+GET    /settings/delivery
+PATCH  /settings/delivery
 ```
 
 Kasir:
 
 ```text
 GET   /orders/pending
+GET   /orders/pending-review
+GET   /orders/ready-to-confirm
+GET   /orders/in-progress
+GET   /orders/{id}
+POST  /orders/{id}/payment/verify
+POST  /orders/{id}/payment/reject
 POST  /orders/{id}/confirm
+POST  /orders/{id}/deliver
+POST  /orders/{id}/complete
 POST  /orders/{id}/cancel
 PATCH /transactions/{id}/status
+GET   /pos/products
+POST  /pos/transactions
 ```
 
 ## Troubleshooting

@@ -128,8 +128,14 @@ class LaravelWebSocketService extends ChangeNotifier {
         case WebSocketConstants.kNewOrderEvent:
           final order = OrderModel.fromJson(_eventDataAsMap(payload['data']));
           ref.read(pendingOrdersProvider.notifier).addNewOrder(order);
+          ref.read(pendingReviewOrdersProvider.notifier).addNewOrder(order);
+          ref.invalidate(readyToConfirmOrdersProvider);
+          ref.invalidate(inProgressOrdersProvider);
         case WebSocketConstants.kOrderStatusEvent:
           ref.invalidate(pendingOrdersProvider);
+          ref.invalidate(pendingReviewOrdersProvider);
+          ref.invalidate(readyToConfirmOrdersProvider);
+          ref.invalidate(inProgressOrdersProvider);
       }
     } catch (error, stackTrace) {
       log(
@@ -195,12 +201,14 @@ class LaravelWebSocketService extends ChangeNotifier {
         userId: null,
         totalAmount: 25000 + (now.second * 1000),
         status: 'pending',
-        paymentMethod: 'cash',
+        paymentStatus: 'awaiting_review',
+        paymentMethod: 'qris',
         createdAt: now.toIso8601String(),
         itemCount: 1 + (now.second % 4),
       );
 
       ref.read(pendingOrdersProvider.notifier).addNewOrder(order);
+      ref.read(pendingReviewOrdersProvider.notifier).addNewOrder(order);
     });
   }
 

@@ -15,12 +15,18 @@ _$TransactionModelImpl _$$TransactionModelImplFromJson(
   paymentMethod: json['payment_method'] as String?,
   paymentStatus: json['payment_status'] as String?,
   total: const FlexibleDoubleConverter().fromJson(json['total']),
+  paidAmount: const FlexibleNullableDoubleConverter().fromJson(
+    json['paid_amount'],
+  ),
   grandTotal: const FlexibleNullableDoubleConverter().fromJson(
     json['grand_total'],
   ),
   status: json['status'] as String,
   tableNumber: json['table_number'] as String?,
   notes: json['notes'] as String?,
+  user: json['user'] == null
+      ? null
+      : UserSummaryModel.fromJson(json['user'] as Map<String, dynamic>),
   createdAt: json['created_at'] as String,
   details:
       (json['details'] as List<dynamic>?)
@@ -38,12 +44,16 @@ Map<String, dynamic> _$$TransactionModelImplToJson(
   'payment_method': instance.paymentMethod,
   'payment_status': instance.paymentStatus,
   'total': const FlexibleDoubleConverter().toJson(instance.total),
+  'paid_amount': const FlexibleNullableDoubleConverter().toJson(
+    instance.paidAmount,
+  ),
   'grand_total': const FlexibleNullableDoubleConverter().toJson(
     instance.grandTotal,
   ),
   'status': instance.status,
   'table_number': instance.tableNumber,
   'notes': instance.notes,
+  'user': instance.user,
   'created_at': instance.createdAt,
   'details': instance.details,
 };

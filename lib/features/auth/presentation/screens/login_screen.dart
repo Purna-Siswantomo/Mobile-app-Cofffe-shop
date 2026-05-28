@@ -52,61 +52,71 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   48,
             ),
             child: Center(
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    const _ArpulLogo(),
-                    const SizedBox(height: 32),
-                    TextFormField(
-                      controller: _emailController,
-                      enabled: !isLoading,
-                      keyboardType: TextInputType.emailAddress,
-                      textInputAction: TextInputAction.next,
-                      decoration: const InputDecoration(
-                        labelText: 'Email',
-                        prefixIcon: Icon(Icons.email_outlined),
-                      ),
-                      validator: _validateEmail,
-                    ),
-                    const SizedBox(height: 14),
-                    TextFormField(
-                      controller: _passwordController,
-                      enabled: !isLoading,
-                      obscureText: _obscurePassword,
-                      textInputAction: TextInputAction.done,
-                      decoration: InputDecoration(
-                        labelText: 'Password',
-                        prefixIcon: const Icon(Icons.lock_outline),
-                        suffixIcon: IconButton(
-                          onPressed: () {
-                            setState(() {
-                              _obscurePassword = !_obscurePassword;
-                            });
-                          },
-                          icon: Icon(
-                            _obscurePassword
-                                ? Icons.visibility_outlined
-                                : Icons.visibility_off_outlined,
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 420),
+                child: Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(22),
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          const _ArpulLogo(),
+                          const SizedBox(height: 28),
+                          TextFormField(
+                            controller: _emailController,
+                            enabled: !isLoading,
+                            keyboardType: TextInputType.emailAddress,
+                            textInputAction: TextInputAction.next,
+                            decoration: const InputDecoration(
+                              labelText: 'Email',
+                              prefixIcon: Icon(Icons.email_outlined),
+                            ),
+                            validator: _validateEmail,
                           ),
-                        ),
+                          const SizedBox(height: 14),
+                          TextFormField(
+                            controller: _passwordController,
+                            enabled: !isLoading,
+                            obscureText: _obscurePassword,
+                            textInputAction: TextInputAction.done,
+                            decoration: InputDecoration(
+                              labelText: 'Password',
+                              prefixIcon: const Icon(Icons.lock_outline),
+                              suffixIcon: IconButton(
+                                onPressed: () {
+                                  setState(() {
+                                    _obscurePassword = !_obscurePassword;
+                                  });
+                                },
+                                icon: Icon(
+                                  _obscurePassword
+                                      ? Icons.visibility_outlined
+                                      : Icons.visibility_off_outlined,
+                                ),
+                              ),
+                            ),
+                            validator: _validatePassword,
+                            onFieldSubmitted: (_) => _submit(),
+                          ),
+                          const SizedBox(height: 22),
+                          ElevatedButton(
+                            onPressed: isLoading ? null : _submit,
+                            child: isLoading
+                                ? const SizedBox.square(
+                                    dimension: 20,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                    ),
+                                  )
+                                : const Text('Masuk'),
+                          ),
+                        ],
                       ),
-                      validator: _validatePassword,
-                      onFieldSubmitted: (_) => _submit(),
                     ),
-                    const SizedBox(height: 22),
-                    ElevatedButton(
-                      onPressed: isLoading ? null : _submit,
-                      child: isLoading
-                          ? const SizedBox.square(
-                              dimension: 20,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            )
-                          : const Text('Masuk'),
-                    ),
-                  ],
+                  ),
                 ),
               ),
             ),
@@ -172,11 +182,11 @@ class _ArpulLogo extends StatelessWidget {
     return Column(
       children: [
         Container(
-          width: 82,
-          height: 82,
-          decoration: const BoxDecoration(
-            color: AppTheme.coffeeBrown,
-            shape: BoxShape.circle,
+          width: 72,
+          height: 72,
+          decoration: BoxDecoration(
+            color: AppTheme.primary,
+            borderRadius: BorderRadius.circular(18),
           ),
           child: const Icon(Icons.local_cafe, color: Colors.white, size: 42),
         ),

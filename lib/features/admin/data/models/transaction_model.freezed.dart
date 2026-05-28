@@ -32,6 +32,9 @@ mixin _$TransactionModel {
   String? get paymentStatus => throw _privateConstructorUsedError;
   @FlexibleDoubleConverter()
   double get total => throw _privateConstructorUsedError;
+  @JsonKey(name: 'paid_amount')
+  @FlexibleNullableDoubleConverter()
+  double? get paidAmount => throw _privateConstructorUsedError;
   @JsonKey(name: 'grand_total')
   @FlexibleNullableDoubleConverter()
   double? get grandTotal => throw _privateConstructorUsedError;
@@ -39,6 +42,7 @@ mixin _$TransactionModel {
   @JsonKey(name: 'table_number')
   String? get tableNumber => throw _privateConstructorUsedError;
   String? get notes => throw _privateConstructorUsedError;
+  UserSummaryModel? get user => throw _privateConstructorUsedError;
   @JsonKey(name: 'created_at')
   String get createdAt => throw _privateConstructorUsedError;
   List<OrderItemModel> get details => throw _privateConstructorUsedError;
@@ -67,15 +71,21 @@ abstract class $TransactionModelCopyWith<$Res> {
     @JsonKey(name: 'payment_method') String? paymentMethod,
     @JsonKey(name: 'payment_status') String? paymentStatus,
     @FlexibleDoubleConverter() double total,
+    @JsonKey(name: 'paid_amount')
+    @FlexibleNullableDoubleConverter()
+    double? paidAmount,
     @JsonKey(name: 'grand_total')
     @FlexibleNullableDoubleConverter()
     double? grandTotal,
     String status,
     @JsonKey(name: 'table_number') String? tableNumber,
     String? notes,
+    UserSummaryModel? user,
     @JsonKey(name: 'created_at') String createdAt,
     List<OrderItemModel> details,
   });
+
+  $UserSummaryModelCopyWith<$Res>? get user;
 }
 
 /// @nodoc
@@ -99,10 +109,12 @@ class _$TransactionModelCopyWithImpl<$Res, $Val extends TransactionModel>
     Object? paymentMethod = freezed,
     Object? paymentStatus = freezed,
     Object? total = null,
+    Object? paidAmount = freezed,
     Object? grandTotal = freezed,
     Object? status = null,
     Object? tableNumber = freezed,
     Object? notes = freezed,
+    Object? user = freezed,
     Object? createdAt = null,
     Object? details = null,
   }) {
@@ -132,6 +144,10 @@ class _$TransactionModelCopyWithImpl<$Res, $Val extends TransactionModel>
                 ? _value.total
                 : total // ignore: cast_nullable_to_non_nullable
                       as double,
+            paidAmount: freezed == paidAmount
+                ? _value.paidAmount
+                : paidAmount // ignore: cast_nullable_to_non_nullable
+                      as double?,
             grandTotal: freezed == grandTotal
                 ? _value.grandTotal
                 : grandTotal // ignore: cast_nullable_to_non_nullable
@@ -148,6 +164,10 @@ class _$TransactionModelCopyWithImpl<$Res, $Val extends TransactionModel>
                 ? _value.notes
                 : notes // ignore: cast_nullable_to_non_nullable
                       as String?,
+            user: freezed == user
+                ? _value.user
+                : user // ignore: cast_nullable_to_non_nullable
+                      as UserSummaryModel?,
             createdAt: null == createdAt
                 ? _value.createdAt
                 : createdAt // ignore: cast_nullable_to_non_nullable
@@ -159,6 +179,20 @@ class _$TransactionModelCopyWithImpl<$Res, $Val extends TransactionModel>
           )
           as $Val,
     );
+  }
+
+  /// Create a copy of TransactionModel
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $UserSummaryModelCopyWith<$Res>? get user {
+    if (_value.user == null) {
+      return null;
+    }
+
+    return $UserSummaryModelCopyWith<$Res>(_value.user!, (value) {
+      return _then(_value.copyWith(user: value) as $Val);
+    });
   }
 }
 
@@ -178,15 +212,22 @@ abstract class _$$TransactionModelImplCopyWith<$Res>
     @JsonKey(name: 'payment_method') String? paymentMethod,
     @JsonKey(name: 'payment_status') String? paymentStatus,
     @FlexibleDoubleConverter() double total,
+    @JsonKey(name: 'paid_amount')
+    @FlexibleNullableDoubleConverter()
+    double? paidAmount,
     @JsonKey(name: 'grand_total')
     @FlexibleNullableDoubleConverter()
     double? grandTotal,
     String status,
     @JsonKey(name: 'table_number') String? tableNumber,
     String? notes,
+    UserSummaryModel? user,
     @JsonKey(name: 'created_at') String createdAt,
     List<OrderItemModel> details,
   });
+
+  @override
+  $UserSummaryModelCopyWith<$Res>? get user;
 }
 
 /// @nodoc
@@ -209,10 +250,12 @@ class __$$TransactionModelImplCopyWithImpl<$Res>
     Object? paymentMethod = freezed,
     Object? paymentStatus = freezed,
     Object? total = null,
+    Object? paidAmount = freezed,
     Object? grandTotal = freezed,
     Object? status = null,
     Object? tableNumber = freezed,
     Object? notes = freezed,
+    Object? user = freezed,
     Object? createdAt = null,
     Object? details = null,
   }) {
@@ -242,6 +285,10 @@ class __$$TransactionModelImplCopyWithImpl<$Res>
             ? _value.total
             : total // ignore: cast_nullable_to_non_nullable
                   as double,
+        paidAmount: freezed == paidAmount
+            ? _value.paidAmount
+            : paidAmount // ignore: cast_nullable_to_non_nullable
+                  as double?,
         grandTotal: freezed == grandTotal
             ? _value.grandTotal
             : grandTotal // ignore: cast_nullable_to_non_nullable
@@ -258,6 +305,10 @@ class __$$TransactionModelImplCopyWithImpl<$Res>
             ? _value.notes
             : notes // ignore: cast_nullable_to_non_nullable
                   as String?,
+        user: freezed == user
+            ? _value.user
+            : user // ignore: cast_nullable_to_non_nullable
+                  as UserSummaryModel?,
         createdAt: null == createdAt
             ? _value.createdAt
             : createdAt // ignore: cast_nullable_to_non_nullable
@@ -281,12 +332,16 @@ class _$TransactionModelImpl extends _TransactionModel {
     @JsonKey(name: 'payment_method') this.paymentMethod,
     @JsonKey(name: 'payment_status') this.paymentStatus,
     @FlexibleDoubleConverter() required this.total,
+    @JsonKey(name: 'paid_amount')
+    @FlexibleNullableDoubleConverter()
+    this.paidAmount,
     @JsonKey(name: 'grand_total')
     @FlexibleNullableDoubleConverter()
     this.grandTotal,
     required this.status,
     @JsonKey(name: 'table_number') this.tableNumber,
     this.notes,
+    this.user,
     @JsonKey(name: 'created_at') required this.createdAt,
     final List<OrderItemModel> details = const <OrderItemModel>[],
   }) : _details = details,
@@ -313,6 +368,10 @@ class _$TransactionModelImpl extends _TransactionModel {
   @FlexibleDoubleConverter()
   final double total;
   @override
+  @JsonKey(name: 'paid_amount')
+  @FlexibleNullableDoubleConverter()
+  final double? paidAmount;
+  @override
   @JsonKey(name: 'grand_total')
   @FlexibleNullableDoubleConverter()
   final double? grandTotal;
@@ -323,6 +382,8 @@ class _$TransactionModelImpl extends _TransactionModel {
   final String? tableNumber;
   @override
   final String? notes;
+  @override
+  final UserSummaryModel? user;
   @override
   @JsonKey(name: 'created_at')
   final String createdAt;
@@ -337,7 +398,7 @@ class _$TransactionModelImpl extends _TransactionModel {
 
   @override
   String toString() {
-    return 'TransactionModel(id: $id, userId: $userId, orderType: $orderType, paymentMethod: $paymentMethod, paymentStatus: $paymentStatus, total: $total, grandTotal: $grandTotal, status: $status, tableNumber: $tableNumber, notes: $notes, createdAt: $createdAt, details: $details)';
+    return 'TransactionModel(id: $id, userId: $userId, orderType: $orderType, paymentMethod: $paymentMethod, paymentStatus: $paymentStatus, total: $total, paidAmount: $paidAmount, grandTotal: $grandTotal, status: $status, tableNumber: $tableNumber, notes: $notes, user: $user, createdAt: $createdAt, details: $details)';
   }
 
   @override
@@ -354,12 +415,15 @@ class _$TransactionModelImpl extends _TransactionModel {
             (identical(other.paymentStatus, paymentStatus) ||
                 other.paymentStatus == paymentStatus) &&
             (identical(other.total, total) || other.total == total) &&
+            (identical(other.paidAmount, paidAmount) ||
+                other.paidAmount == paidAmount) &&
             (identical(other.grandTotal, grandTotal) ||
                 other.grandTotal == grandTotal) &&
             (identical(other.status, status) || other.status == status) &&
             (identical(other.tableNumber, tableNumber) ||
                 other.tableNumber == tableNumber) &&
             (identical(other.notes, notes) || other.notes == notes) &&
+            (identical(other.user, user) || other.user == user) &&
             (identical(other.createdAt, createdAt) ||
                 other.createdAt == createdAt) &&
             const DeepCollectionEquality().equals(other._details, _details));
@@ -375,10 +439,12 @@ class _$TransactionModelImpl extends _TransactionModel {
     paymentMethod,
     paymentStatus,
     total,
+    paidAmount,
     grandTotal,
     status,
     tableNumber,
     notes,
+    user,
     createdAt,
     const DeepCollectionEquality().hash(_details),
   );
@@ -408,12 +474,16 @@ abstract class _TransactionModel extends TransactionModel {
     @JsonKey(name: 'payment_method') final String? paymentMethod,
     @JsonKey(name: 'payment_status') final String? paymentStatus,
     @FlexibleDoubleConverter() required final double total,
+    @JsonKey(name: 'paid_amount')
+    @FlexibleNullableDoubleConverter()
+    final double? paidAmount,
     @JsonKey(name: 'grand_total')
     @FlexibleNullableDoubleConverter()
     final double? grandTotal,
     required final String status,
     @JsonKey(name: 'table_number') final String? tableNumber,
     final String? notes,
+    final UserSummaryModel? user,
     @JsonKey(name: 'created_at') required final String createdAt,
     final List<OrderItemModel> details,
   }) = _$TransactionModelImpl;
@@ -440,6 +510,10 @@ abstract class _TransactionModel extends TransactionModel {
   @FlexibleDoubleConverter()
   double get total;
   @override
+  @JsonKey(name: 'paid_amount')
+  @FlexibleNullableDoubleConverter()
+  double? get paidAmount;
+  @override
   @JsonKey(name: 'grand_total')
   @FlexibleNullableDoubleConverter()
   double? get grandTotal;
@@ -450,6 +524,8 @@ abstract class _TransactionModel extends TransactionModel {
   String? get tableNumber;
   @override
   String? get notes;
+  @override
+  UserSummaryModel? get user;
   @override
   @JsonKey(name: 'created_at')
   String get createdAt;

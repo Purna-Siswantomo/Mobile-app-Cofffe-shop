@@ -3,9 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../features/admin/presentation/screens/admin_dashboard_screen.dart';
+import '../../features/admin/presentation/screens/admin_management_screen.dart';
 import '../../features/admin/presentation/screens/product_form_screen.dart';
 import '../../features/admin/presentation/screens/product_list_screen.dart';
 import '../../features/admin/presentation/screens/report_screen.dart';
+import '../../features/admin/presentation/screens/transaction_detail_screen.dart';
 import '../../features/auth/presentation/providers/auth_provider.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/kasir/presentation/screens/kasir_dashboard_screen.dart';
@@ -65,6 +67,19 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: 'reports',
             builder: (context, state) => const ReportScreen(),
+            routes: [
+              GoRoute(
+                path: ':id',
+                builder: (context, state) {
+                  final id = int.tryParse(state.pathParameters['id'] ?? '');
+                  return TransactionDetailScreen(transactionId: id);
+                },
+              ),
+            ],
+          ),
+          GoRoute(
+            path: 'management',
+            builder: (context, state) => const AdminManagementScreen(),
           ),
         ],
       ),
