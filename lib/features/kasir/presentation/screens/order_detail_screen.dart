@@ -4,8 +4,11 @@ import 'package:intl/intl.dart';
 
 import '../../../../core/network/app_exception.dart';
 import '../../../../shared/widgets/app_error_widget.dart';
+import '../../../../shared/widgets/dialog_action_row.dart';
 import '../../../../shared/widgets/empty_state_widget.dart';
 import '../../../../shared/widgets/loading_widget.dart';
+import '../../../../shared/widgets/payment_proof_viewer.dart';
+import '../../../../shared/widgets/reason_dialog.dart';
 import '../../../../shared/widgets/status_badge.dart';
 import '../../data/models/order_model.dart';
 import '../providers/order_provider.dart';
@@ -146,14 +149,20 @@ class _OrderDetailContent extends ConsumerWidget {
           const SizedBox(height: 8),
           Card(
             clipBehavior: Clip.antiAlias,
-            child: Image.network(
-              order.paymentProofUrl!,
-              height: 240,
-              width: double.infinity,
-              fit: BoxFit.contain,
-              errorBuilder: (_, __, ___) => const Padding(
-                padding: EdgeInsets.all(24),
-                child: Text('Bukti pembayaran gagal dimuat.'),
+            child: InkWell(
+              onTap: () => showPaymentProofViewer(
+                context,
+                imageUrl: order.paymentProofUrl!,
+              ),
+              child: Image.network(
+                resolveBackendAssetUrl(order.paymentProofUrl!),
+                height: 240,
+                width: double.infinity,
+                fit: BoxFit.contain,
+                errorBuilder: (_, __, ___) => const Padding(
+                  padding: EdgeInsets.all(24),
+                  child: Text('Bukti pembayaran gagal dimuat.'),
+                ),
               ),
             ),
           ),
@@ -195,16 +204,19 @@ class _OrderDetailContent extends ConsumerWidget {
           ),
         ),
         const SizedBox(height: 18),
-        if (order.status == 'pending') ...[
-          OutlinedButton(
-            onPressed: () => _cancelOrder(context, ref),
-            child: const Text('Batalkan'),
-          ),
-          const SizedBox(height: 10),
-          ElevatedButton(
-            onPressed: () => _confirmOrder(context, ref),
-            child: const Text('Konfirmasi'),
-          ),
+        if (order.canBeCanceledByKasir || order.canBeConfirmedByKasir) ...[
+          if (order.canBeCanceledByKasir) ...[
+            OutlinedButton(
+              onPressed: () => _cancelOrder(context, ref),
+              child: const Text('Batalkan'),
+            ),
+            const SizedBox(height: 10),
+          ],
+          if (order.canBeConfirmedByKasir)
+            ElevatedButton(
+              onPressed: () => _confirmOrder(context, ref),
+              child: const Text('Konfirmasi'),
+            ),
         ] else
           FilledButton.tonal(
             onPressed: null,
@@ -239,22 +251,18 @@ class _OrderDetailContent extends ConsumerWidget {
   }
 
   Future<void> _cancelOrder(BuildContext context, WidgetRef ref) async {
-    final confirmed = await _showDialog(
-      context,
-      title: 'Batalkan pesanan?',
-      message: 'Pesanan #${order.id} akan dibatalkan.',
-      confirmLabel: 'Batalkan',
-      isDestructive: true,
-    );
-
-    if (!confirmed || !context.mounted) {
+    final reason = await _askReason(context, 'Alasan pembatalan');
+    if (reason == null || reason.isEmpty || !context.mounted) {
       return;
     }
 
     try {
-      await ref
-          .read(pendingOrdersProvider.notifier)
-          .cancelOrder(order.id, 'Dibatalkan oleh kasir');
+      await ref.read(orderRepositoryProvider).cancelOrder(order.id, reason);
+      ref.invalidate(pendingOrdersProvider);
+      ref.invalidate(pendingReviewOrdersProvider);
+      ref.invalidate(readyToConfirmOrdersProvider);
+      ref.invalidate(inProgressOrdersProvider);
+
       if (context.mounted) {
         Navigator.of(context).pop();
       }
@@ -263,6 +271,17 @@ class _OrderDetailContent extends ConsumerWidget {
         _showError(context, error);
       }
     }
+  }
+
+  Future<String?> _askReason(BuildContext context, String title) async {
+    return showDialog<String>(
+      context: context,
+      builder: (context) => ReasonDialog(
+        title: title,
+        confirmLabel: 'Batalkan',
+        isDestructive: true,
+      ),
+    );
   }
 
   Future<bool> _showDialog(
@@ -278,19 +297,12 @@ class _OrderDetailContent extends ConsumerWidget {
             title: Text(title),
             content: Text(message),
             actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(false),
-                child: const Text('Kembali'),
-              ),
-              ElevatedButton(
-                onPressed: () => Navigator.of(context).pop(true),
-                style: isDestructive
-                    ? ElevatedButton.styleFrom(
-                        backgroundColor: Theme.of(context).colorScheme.error,
-                        foregroundColor: Theme.of(context).colorScheme.onError,
-                      )
-                    : null,
-                child: Text(confirmLabel),
+              DialogActionRow(
+                cancelLabel: 'Kembali',
+                confirmLabel: confirmLabel,
+                isDestructive: isDestructive,
+                onCancel: () => Navigator.of(context).pop(false),
+                onConfirm: () => Navigator.of(context).pop(true),
               ),
             ],
           ),
@@ -299,9 +311,12 @@ class _OrderDetailContent extends ConsumerWidget {
   }
 
   void _showError(BuildContext context, Object error) {
-    final message = error is AppException
-        ? error.message
-        : 'Aksi gagal. Silakan coba lagi.';
+    final message = switch (error) {
+      ValidationException(:final errors) when errors.isNotEmpty =>
+        errors.values.first.first,
+      AppException(:final message) => message,
+      _ => 'Aksi gagal. Silakan coba lagi.',
+    };
 
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()

@@ -201,13 +201,33 @@ class OrderRepository {
 
   Map<String, dynamic> _asMap(Object? value) {
     if (value is Map<String, dynamic>) {
-      return value;
+      return _normalizeOrderAssetUrls(value);
     }
     if (value is Map) {
-      return value.map((key, value) => MapEntry(key.toString(), value));
+      return _normalizeOrderAssetUrls(
+        value.map((key, value) => MapEntry(key.toString(), value)),
+      );
     }
 
     return <String, dynamic>{};
+  }
+
+  Map<String, dynamic> _normalizeOrderAssetUrls(Map<String, dynamic> order) {
+    final proofPath = order['payment_proof'];
+    final proofUrl = order['payment_proof_url'];
+
+    if ((proofUrl == null || proofUrl == '') &&
+        proofPath is String &&
+        proofPath.isNotEmpty) {
+      return {
+        ...order,
+        'payment_proof_url': proofPath.startsWith('/')
+            ? proofPath
+            : '/storage/$proofPath',
+      };
+    }
+
+    return order;
   }
 
   AppException _toAppException(DioException error) {

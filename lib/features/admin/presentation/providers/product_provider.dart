@@ -16,6 +16,12 @@ Future<List<ProductModel>> products(Ref ref) {
   return ref.read(productRepositoryProvider).getProducts();
 }
 
+final productCategoriesProvider = FutureProvider.autoDispose<List<String>>((
+  ref,
+) {
+  return ref.read(productRepositoryProvider).getCategories();
+});
+
 @riverpod
 Future<ProductModel> productDetail(Ref ref, int id) {
   return ref.read(productRepositoryProvider).getProduct(id);

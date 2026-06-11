@@ -50,16 +50,41 @@ class _KasirDashboardScreenState extends ConsumerState<KasirDashboardScreen> {
     }
   }
 
+  ApiConnectionStatus _apiConnectionStatus(
+    List<AsyncValue<List<OrderModel>>> states,
+  ) {
+    if (states.any((state) => state.hasValue)) {
+      return ApiConnectionStatus.online;
+    }
+
+    if (states.any((state) => state.isLoading)) {
+      return ApiConnectionStatus.checking;
+    }
+
+    return ApiConnectionStatus.offline;
+  }
+
   @override
   Widget build(BuildContext context) {
-    final reviewOrders = ref.watch(pendingReviewOrdersProvider).valueOrNull;
-    final readyOrders = ref.watch(readyToConfirmOrdersProvider).valueOrNull;
-    final inProgressOrders = ref.watch(inProgressOrdersProvider).valueOrNull;
+    final reviewState = ref.watch(pendingReviewOrdersProvider);
+    final readyState = ref.watch(readyToConfirmOrdersProvider);
+    final inProgressState = ref.watch(inProgressOrdersProvider);
+    final reviewOrders = reviewState.valueOrNull;
+    final readyOrders = readyState.valueOrNull;
+    final inProgressOrders = inProgressState.valueOrNull;
     final pendingCount =
         (reviewOrders?.length ?? 0) +
         (readyOrders?.length ?? 0) +
         (inProgressOrders?.length ?? 0);
-    final connectionStatus = _webSocketService.status;
+    final realtimeStatus = _webSocketService.status;
+    final apiStatus = _apiConnectionStatus([
+      reviewState,
+      readyState,
+      inProgressState,
+    ]);
+    final isFullyOffline =
+        apiStatus == ApiConnectionStatus.offline &&
+        realtimeStatus == RealtimeConnectionStatus.disconnected;
 
     return DefaultTabController(
       length: 4,
@@ -67,7 +92,10 @@ class _KasirDashboardScreenState extends ConsumerState<KasirDashboardScreen> {
         appBar: AppBar(
           title: const Text('Kasir - Arpul'),
           actions: [
-            ConnectionIndicator(status: connectionStatus),
+            ConnectionIndicator(
+              realtimeStatus: realtimeStatus,
+              apiStatus: apiStatus,
+            ),
             Padding(
               padding: const EdgeInsets.only(right: 4),
               child: _PendingCounter(count: pendingCount),
@@ -90,8 +118,7 @@ class _KasirDashboardScreenState extends ConsumerState<KasirDashboardScreen> {
         ),
         body: Column(
           children: [
-            if (connectionStatus == RealtimeConnectionStatus.disconnected)
-              const _OfflineBanner(),
+            if (isFullyOffline) const _OfflineBanner(),
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 14, 16, 8),
               child: Row(
@@ -126,7 +153,7 @@ class _KasirDashboardScreenState extends ConsumerState<KasirDashboardScreen> {
               child: TabBarView(
                 children: [
                   _OrderListTab(
-                    state: ref.watch(pendingReviewOrdersProvider),
+                    state: reviewState,
                     mode: OrderCardMode.review,
                     emptyTitle: 'Belum ada bukti pembayaran',
                     emptySubtitle:
@@ -135,7 +162,7 @@ class _KasirDashboardScreenState extends ConsumerState<KasirDashboardScreen> {
                         ref.read(pendingReviewOrdersProvider.notifier).fetch(),
                   ),
                   _OrderListTab(
-                    state: ref.watch(readyToConfirmOrdersProvider),
+                    state: readyState,
                     mode: OrderCardMode.confirm,
                     emptyTitle: 'Belum ada order siap konfirmasi',
                     emptySubtitle:
@@ -144,7 +171,7 @@ class _KasirDashboardScreenState extends ConsumerState<KasirDashboardScreen> {
                         ref.read(readyToConfirmOrdersProvider.notifier).fetch(),
                   ),
                   _OrderListTab(
-                    state: ref.watch(inProgressOrdersProvider),
+                    state: inProgressState,
                     mode: OrderCardMode.inProgress,
                     emptyTitle: 'Tidak ada order diproses',
                     emptySubtitle:
@@ -450,7 +477,7 @@ class _OfflineBanner extends StatelessWidget {
             const SizedBox(width: 10),
             Expanded(
               child: Text(
-                'Mode offline',
+                'API dan realtime belum tersambung',
                 style: TextStyle(
                   color: colorScheme.onErrorContainer,
                   fontWeight: FontWeight.w700,

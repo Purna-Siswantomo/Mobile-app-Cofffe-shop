@@ -17,6 +17,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
+  String? _credentialError;
 
   @override
   void dispose() {
@@ -29,16 +30,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   Widget build(BuildContext context) {
     final authState = ref.watch(authStateProvider);
     final isLoading = authState.isLoading;
-
-    ref.listen(authStateProvider, (previous, next) {
-      next.whenOrNull(
-        error: (error, _) {
-          if (previous?.isLoading ?? false) {
-            _showError(error);
-          }
-        },
-      );
-    });
 
     return Scaffold(
       body: SafeArea(
@@ -70,6 +61,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             enabled: !isLoading,
                             keyboardType: TextInputType.emailAddress,
                             textInputAction: TextInputAction.next,
+                            onChanged: (_) => _clearCredentialError(),
                             decoration: const InputDecoration(
                               labelText: 'Email',
                               prefixIcon: Icon(Icons.email_outlined),
@@ -82,6 +74,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             enabled: !isLoading,
                             obscureText: _obscurePassword,
                             textInputAction: TextInputAction.done,
+                            onChanged: (_) => _clearCredentialError(),
                             decoration: InputDecoration(
                               labelText: 'Password',
                               prefixIcon: const Icon(Icons.lock_outline),
@@ -146,6 +139,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     if (password.isEmpty) {
       return 'Password wajib diisi';
     }
+    if (_credentialError != null) {
+      return _credentialError;
+    }
     if (password.length < 6) {
       return 'Password minimal 6 karakter';
     }
@@ -154,17 +150,45 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   }
 
   Future<void> _submit() async {
+    _clearCredentialError(validate: false);
     if (!_formKey.currentState!.validate()) {
       return;
     }
 
-    await ref
-        .read(authStateProvider.notifier)
-        .login(_emailController.text.trim(), _passwordController.text);
+    try {
+      await ref
+          .read(authStateProvider.notifier)
+          .login(_emailController.text.trim(), _passwordController.text);
+    } catch (error) {
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _credentialError = error is UnauthorizedException
+            ? 'Email atau password tidak sesuai'
+            : null;
+      });
+      _formKey.currentState!.validate();
+      _showError(error);
+    }
+  }
+
+  void _clearCredentialError({bool validate = true}) {
+    if (_credentialError == null) {
+      return;
+    }
+
+    setState(() => _credentialError = null);
+    if (validate) {
+      _formKey.currentState?.validate();
+    }
   }
 
   void _showError(Object error) {
-    final message = error is AppException
+    final message = error is UnauthorizedException
+        ? 'Email atau password tidak sesuai'
+        : error is AppException
         ? error.message
         : 'Login gagal. Periksa email dan password.';
 

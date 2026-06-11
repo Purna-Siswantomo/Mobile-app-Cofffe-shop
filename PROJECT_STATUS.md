@@ -182,6 +182,9 @@ Sudah dibuat:
 - Product list.
 - Product card dengan gambar, harga, kategori, stok, edit, dan hapus.
 - Product create/edit form.
+- Upload gambar produk dari galeri/kamera dengan preview.
+- Field gambar wajib saat create product.
+- Dropdown kategori dari data backend dan tambah kategori lokal pada form.
 - Repository dan provider untuk dashboard dan produk.
 - Reports admin dasar dari endpoint transaksi.
 
@@ -195,8 +198,8 @@ Yang belum selesai:
 
 - Reports admin mobile sudah punya filter dan detail transaksi, tetapi belum memakai API summary/export baru.
 - User management, notification management, dan delivery setting admin belum dibuat di mobile meskipun backend API sudah siap.
-- Upload gambar produk masih placeholder.
-- Validasi form produk masih basic.
+- Kategori masih berupa field produk, belum menjadi tabel/CRUD kategori mandiri.
+- Validasi form produk sudah ada untuk field wajib dan gambar, tetapi pesan error bisa dipoles lebih lanjut.
 
 ### 5. Kasir
 
@@ -214,7 +217,9 @@ Sudah dibuat:
 - Tombol verifikasi/tolak pembayaran.
 - Tombol konfirmasi, deliver, complete, dan batalkan.
 - Modal konfirmasi sebelum aksi.
+- Dialog alasan cancel/reject dengan validasi wajib isi.
 - Order detail screen dengan item, customer, delivery, dan bukti pembayaran jika tersedia.
+- Popup bukti pembayaran full/fleksibel.
 - POS cash sederhana dengan keranjang, paid amount, dan kembalian.
 
 Status:
@@ -225,12 +230,10 @@ Flow kasir utama sudah masuk untuk MVP, tetapi belum dipoles untuk operasional p
 
 Yang masih kurang di kasir:
 
-- Route `/kasir/orders` masih placeholder list sederhana.
-- Action di detail order belum selengkap action pada tab/card kasir.
 - Belum ada riwayat order kasir yang sudah diproses.
 - Belum ada filter/search order.
 - Belum ada notifikasi visual/audio yang matang ketika order baru masuk.
-- Cancel order masih basic dan perlu UX alasan pembatalan yang lebih baik.
+- Cancel order sudah idempotent di backend API, tetapi tetap perlu uji manual berulang di HP fisik dengan data real.
 
 Dengan kondisi sekarang, kasir sudah bisa menjalankan flow utama, tetapi masih perlu pengujian manual dengan data real dan penyempurnaan UX sebelum dipakai sebagai sistem kasir harian.
 
@@ -333,10 +336,10 @@ Catatan:
 Project belum selesai karena beberapa fitur penting belum lengkap:
 
 - Mobile kasir sudah punya flow utama, tetapi route list, detail action, riwayat, filter/search, dan notifikasi masih perlu dilengkapi.
-- Bukti pembayaran sudah bisa ditampilkan dan diverifikasi dari card/list kasir, tetapi UX detail masih perlu diseragamkan.
+- Bukti pembayaran sudah bisa ditampilkan dari card/detail kasir melalui endpoint publik API `/api/v1/public/storage/{path}`.
 - Admin reports belum memakai API summary/export baru.
 - Admin user management, notification management, dan delivery setting belum masuk mobile.
-- Upload gambar produk belum dikerjakan.
+- Product CRUD admin sudah mendukung upload gambar, tetapi kategori belum punya CRUD mandiri.
 - Member/customer mobile belum dibuat.
 - Fitur favorite, profile, delivery management penuh, dan upload payment proof dari customer masih dominan di backend/web, belum masuk mobile.
 - Belum ada konfigurasi production final untuk domain, HTTPS, signing APK, dan Reverb production.
@@ -345,19 +348,17 @@ Project belum selesai karena beberapa fitur penting belum lengkap:
 
 Urutan pengerjaan yang disarankan:
 
-1. Lengkapi route `/kasir/orders` agar bukan placeholder.
-2. Seragamkan action di detail order dengan tab kasir: verify/reject, confirm, deliver, complete, cancel.
-3. Uji manual flow real: member order, upload bukti, verify, confirm, deliver/complete, cancel, dan POS cash.
-4. Tambahkan riwayat order kasir.
-5. Tambahkan filter/search order.
-6. Hubungkan reports admin ke API `/reports/summary` dan `/reports/export`.
-7. Tambahkan mobile admin user management dari API `/users`.
-8. Tambahkan mobile admin notification management dari API `/notifications`.
-9. Tambahkan mobile admin delivery setting dari API `/settings/delivery`.
-10. Tambahkan upload gambar produk.
-11. Uji realtime end-to-end dari order dibuat sampai muncul di dashboard kasir.
-12. Siapkan konfigurasi APK release untuk HP fisik.
-13. Siapkan konfigurasi production: domain API, HTTPS, dan Reverb production.
+1. Uji manual flow real: member order, upload bukti, verify, confirm, deliver/complete, cancel, dan POS cash.
+2. Tambahkan riwayat order kasir.
+3. Tambahkan filter/search order.
+4. Hubungkan reports admin ke API `/reports/summary` dan `/reports/export`.
+5. Tambahkan mobile admin user management dari API `/users`.
+6. Tambahkan mobile admin notification management dari API `/notifications`.
+7. Tambahkan mobile admin delivery setting dari API `/settings/delivery`.
+8. Pertimbangkan CRUD kategori mandiri jika kategori harus bisa dibuat tanpa membuat produk.
+9. Uji realtime end-to-end dari order dibuat sampai muncul di dashboard kasir.
+10. Siapkan konfigurasi APK release untuk HP fisik.
+11. Siapkan konfigurasi production: domain API, HTTPS, dan Reverb production.
 
 ## Kesimpulan
 

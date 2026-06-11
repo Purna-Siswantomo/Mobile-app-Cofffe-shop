@@ -41,7 +41,13 @@ class AuthState extends _$AuthState {
 
   Future<void> login(String email, String password) async {
     state = const AsyncValue.loading();
-    state = await AsyncValue.guard(() => _repository.login(email, password));
+    try {
+      final user = await _repository.login(email, password);
+      state = AsyncValue.data(user);
+    } catch (error) {
+      state = const AsyncValue.data(null);
+      rethrow;
+    }
   }
 
   Future<void> logout() async {

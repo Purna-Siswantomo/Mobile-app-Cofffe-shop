@@ -48,11 +48,47 @@ class ProductRepository {
     }
   }
 
-  Future<ProductModel> createProduct(Map<String, dynamic> data) async {
+  Future<List<String>> getCategories() async {
     try {
+      final response = await _dio.get<Map<String, dynamic>>(
+        ApiEndpoints.kProductCategories,
+      );
+
+      final data = response.data?['data'];
+      if (data is! List) {
+        return const [];
+      }
+
+      return data
+          .whereType<Object>()
+          .map((item) => item.toString().trim())
+          .where((item) => item.isNotEmpty)
+          .toSet()
+          .toList()
+        ..sort();
+    } on DioException catch (error) {
+      throw _toAppException(error);
+    }
+  }
+
+  Future<ProductModel> createProduct(
+    Map<String, dynamic> data, {
+    String? imagePath,
+  }) async {
+    try {
+      final requestData = imagePath == null
+          ? data
+          : FormData.fromMap({
+              ...data,
+              'image': await MultipartFile.fromFile(imagePath),
+            });
+
       final response = await _dio.post<Map<String, dynamic>>(
         ApiEndpoints.kProducts,
-        data: data,
+        data: requestData,
+        options: imagePath == null
+            ? null
+            : Options(contentType: Headers.multipartFormDataContentType),
       );
 
       return ProductModel.fromJson(_readMap(response.data));
@@ -61,12 +97,29 @@ class ProductRepository {
     }
   }
 
-  Future<ProductModel> updateProduct(int id, Map<String, dynamic> data) async {
+  Future<ProductModel> updateProduct(
+    int id,
+    Map<String, dynamic> data, {
+    String? imagePath,
+  }) async {
     try {
-      final response = await _dio.put<Map<String, dynamic>>(
-        '${ApiEndpoints.kProducts}/$id',
-        data: data,
-      );
+      final Response<Map<String, dynamic>> response;
+      if (imagePath == null) {
+        response = await _dio.put<Map<String, dynamic>>(
+          '${ApiEndpoints.kProducts}/$id',
+          data: data,
+        );
+      } else {
+        response = await _dio.post<Map<String, dynamic>>(
+          '${ApiEndpoints.kProducts}/$id',
+          data: FormData.fromMap({
+            ...data,
+            '_method': 'PUT',
+            'image': await MultipartFile.fromFile(imagePath),
+          }),
+          options: Options(contentType: Headers.multipartFormDataContentType),
+        );
+      }
 
       return ProductModel.fromJson(_readMap(response.data));
     } on DioException catch (error) {
@@ -99,13 +152,26 @@ class ProductRepository {
 
   Map<String, dynamic> _asMap(Object? value) {
     if (value is Map<String, dynamic>) {
-      return value;
+      return _normalizeProductImageUrl(value);
     }
     if (value is Map) {
-      return value.map((key, value) => MapEntry(key.toString(), value));
+      return _normalizeProductImageUrl(
+        value.map((key, value) => MapEntry(key.toString(), value)),
+      );
     }
 
     return <String, dynamic>{};
+  }
+
+  Map<String, dynamic> _normalizeProductImageUrl(Map<String, dynamic> product) {
+    final uploadedImageUrl = product['gambar_url'];
+    if ((product['image_url'] == null || product['image_url'] == '') &&
+        uploadedImageUrl is String &&
+        uploadedImageUrl.isNotEmpty) {
+      return {...product, 'image_url': uploadedImageUrl};
+    }
+
+    return product;
   }
 
   AppException _toAppException(DioException error) {

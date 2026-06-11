@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import '../../../../core/network/app_exception.dart';
 import '../../../../features/admin/data/models/product_model.dart';
 import '../../../../shared/widgets/app_error_widget.dart';
+import '../../../../shared/widgets/dialog_action_row.dart';
 import '../../../../shared/widgets/empty_state_widget.dart';
 import '../../../../shared/widgets/loading_widget.dart';
 import '../../data/repositories/order_repository.dart';
@@ -27,6 +28,7 @@ class _PosTabState extends ConsumerState<PosTab> {
 
   String? _selectedCategory;
   bool _isSubmitting = false;
+  bool _isCartExpanded = false;
 
   static final _currency = NumberFormat.currency(
     locale: 'id_ID',
@@ -77,6 +79,7 @@ class _PosTabState extends ConsumerState<PosTab> {
       child: LayoutBuilder(
         builder: (context, constraints) {
           final isWide = constraints.maxWidth >= 820;
+          final hasCartItems = _cart.isNotEmpty;
           final productPane = _ProductPane(
             products: filteredProducts,
             categories: categories,
@@ -110,27 +113,45 @@ class _PosTabState extends ConsumerState<PosTab> {
                 : null,
           );
 
-          if (isWide) {
-            return ListView(
-              physics: const AlwaysScrollableScrollPhysics(),
-              padding: const EdgeInsets.all(16),
-              children: [
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(flex: 3, child: productPane),
-                    const SizedBox(width: 16),
-                    Expanded(flex: 2, child: cartPane),
-                  ],
+          return Stack(
+            children: [
+              ListView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: EdgeInsets.fromLTRB(
+                  16,
+                  16,
+                  16,
+                  hasCartItems ? 104 : 16,
                 ),
-              ],
-            );
-          }
-
-          return ListView(
-            physics: const AlwaysScrollableScrollPhysics(),
-            padding: const EdgeInsets.all(16),
-            children: [productPane, const SizedBox(height: 16), cartPane],
+                children: [productPane],
+              ),
+              if (hasCartItems && _isCartExpanded)
+                Positioned(
+                  right: 16,
+                  bottom: 88,
+                  left: isWide ? null : 16,
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      maxWidth: isWide ? 430 : constraints.maxWidth - 32,
+                      maxHeight: constraints.maxHeight * 0.76,
+                    ),
+                    child: cartPane,
+                  ),
+                ),
+              if (hasCartItems)
+                Positioned(
+                  right: 16,
+                  bottom: 16,
+                  child: _CartFloatingButton(
+                    cartCount: cartCount,
+                    total: total,
+                    isExpanded: _isCartExpanded,
+                    onPressed: () {
+                      setState(() => _isCartExpanded = !_isCartExpanded);
+                    },
+                  ),
+                ),
+            ],
           );
         },
       ),
@@ -159,13 +180,21 @@ class _PosTabState extends ConsumerState<PosTab> {
       return;
     }
 
-    setState(() => _cart[product.id] = currentQty + 1);
+    setState(() {
+      _cart[product.id] = currentQty + 1;
+      _isCartExpanded = false;
+    });
   }
 
   void _removeProduct(ProductModel product) {
     final currentQty = _cart[product.id] ?? 0;
     if (currentQty <= 1) {
-      setState(() => _cart.remove(product.id));
+      setState(() {
+        _cart.remove(product.id);
+        if (_cart.isEmpty) {
+          _isCartExpanded = false;
+        }
+      });
       return;
     }
 
@@ -189,20 +218,22 @@ class _PosTabState extends ConsumerState<PosTab> {
         title: const Text('Kosongkan keranjang?'),
         content: const Text('Semua item POS akan dihapus dari keranjang.'),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Kembali'),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Kosongkan'),
+          DialogActionRow(
+            cancelLabel: 'Kembali',
+            confirmLabel: 'Kosongkan',
+            isDestructive: true,
+            onCancel: () => Navigator.of(context).pop(false),
+            onConfirm: () => Navigator.of(context).pop(true),
           ),
         ],
       ),
     );
 
     if (confirmed == true && mounted) {
-      setState(() => _cart.clear());
+      setState(() {
+        _cart.clear();
+        _isCartExpanded = false;
+      });
     }
   }
 
@@ -221,13 +252,11 @@ class _PosTabState extends ConsumerState<PosTab> {
           ],
         ),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Kembali'),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Bayar'),
+          DialogActionRow(
+            cancelLabel: 'Kembali',
+            confirmLabel: 'Bayar',
+            onCancel: () => Navigator.of(context).pop(false),
+            onConfirm: () => Navigator.of(context).pop(true),
           ),
         ],
       ),
@@ -261,6 +290,7 @@ class _PosTabState extends ConsumerState<PosTab> {
 
       setState(() {
         _cart.clear();
+        _isCartExpanded = false;
         _paidController.clear();
         _tableController.clear();
         _notesController.clear();
@@ -535,7 +565,10 @@ class _CartPane extends StatelessWidget {
     final remaining = total - paid;
 
     return Card(
-      child: Padding(
+      elevation: 10,
+      shadowColor: Colors.black.withValues(alpha: 0.24),
+      clipBehavior: Clip.antiAlias,
+      child: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -559,19 +592,25 @@ class _CartPane extends StatelessWidget {
                 subtitle: 'Pilih produk untuk mulai transaksi POS.',
               )
             else
-              ...cart.entries.map((entry) {
-                final product = products[entry.key];
-                if (product == null) {
-                  return const SizedBox.shrink();
-                }
+              ConstrainedBox(
+                constraints: const BoxConstraints(maxHeight: 190),
+                child: ListView(
+                  shrinkWrap: true,
+                  children: cart.entries.map((entry) {
+                    final product = products[entry.key];
+                    if (product == null) {
+                      return const SizedBox.shrink();
+                    }
 
-                return _CartItemRow(
-                  product: product,
-                  quantity: entry.value,
-                  onAdd: () => onAdd(product),
-                  onRemove: () => onRemove(product),
-                );
-              }),
+                    return _CartItemRow(
+                      product: product,
+                      quantity: entry.value,
+                      onAdd: () => onAdd(product),
+                      onRemove: () => onRemove(product),
+                    );
+                  }).toList(),
+                ),
+              ),
             const SizedBox(height: 12),
             TextField(
               controller: tableController,
@@ -635,6 +674,99 @@ class _CartPane extends StatelessWidget {
               ],
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _CartFloatingButton extends StatelessWidget {
+  const _CartFloatingButton({
+    required this.cartCount,
+    required this.total,
+    required this.isExpanded,
+    required this.onPressed,
+  });
+
+  final int cartCount;
+  final double total;
+  final bool isExpanded;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Material(
+      color: colorScheme.primary,
+      elevation: 10,
+      shadowColor: Colors.black.withValues(alpha: 0.26),
+      borderRadius: BorderRadius.circular(999),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(999),
+        onTap: onPressed,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(14, 10, 16, 10),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  Icon(
+                    isExpanded
+                        ? Icons.shopping_cart_checkout
+                        : Icons.shopping_cart_outlined,
+                    color: colorScheme.onPrimary,
+                  ),
+                  Positioned(
+                    right: -8,
+                    top: -8,
+                    child: Container(
+                      constraints: const BoxConstraints(
+                        minWidth: 18,
+                        minHeight: 18,
+                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 5),
+                      decoration: BoxDecoration(
+                        color: colorScheme.error,
+                        borderRadius: BorderRadius.circular(999),
+                        border: Border.all(color: colorScheme.primary),
+                      ),
+                      alignment: Alignment.center,
+                      child: Text(
+                        '$cartCount',
+                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                          color: colorScheme.onError,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(width: 14),
+              Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    isExpanded ? 'Tutup keranjang' : 'Lihat keranjang',
+                    style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                      color: colorScheme.onPrimary,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  Text(
+                    _PosTabState._currency.format(total),
+                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                      color: colorScheme.onPrimary.withValues(alpha: 0.86),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );

@@ -2,12 +2,10 @@
 
 Dokumen ini mencatat flow kasir yang sudah ada di backend web `Arpul-Coffee-shop`, lalu membandingkannya dengan integrasi yang sudah ada di `arpul_mobile`.
 
-Kesimpulan utama setelah audit terbaru: **flow kasir mobile sudah jauh lebih lengkap daripada catatan awal, tetapi belum selesai untuk operasional penuh**. Mobile sekarang sudah menangani pending review, verifikasi/tolak pembayaran, ready-to-confirm, in-progress, deliver, complete, cancel, detail order dengan item/bukti pembayaran, realtime Reverb, dan POS cash sederhana.
+Kesimpulan utama setelah audit terbaru: **flow kasir mobile sudah jauh lebih lengkap daripada catatan awal, tetapi belum selesai untuk operasional penuh**. Mobile sekarang sudah menangani pending review, verifikasi/tolak pembayaran, ready-to-confirm, in-progress, deliver, complete, cancel idempotent, detail order dengan item/bukti pembayaran, realtime Reverb, dan POS cash sederhana.
 
 Gap yang masih tersisa terutama:
 
-- Route `/kasir/orders` masih placeholder.
-- Action di `OrderDetailScreen` belum selengkap action pada card/tab kasir.
 - Riwayat order kasir, filter/search, dan notifikasi audio/visual belum matang.
 - Cetak/download struk POS belum masuk mobile, walaupun backend mengembalikan `receipt_url`.
 - Flow delivery admin/kurir penuh masih web/backend, mobile baru menangani status delivery pada order kasir.
@@ -138,9 +136,8 @@ payment_status = rejected
 Status integrasi mobile kasir:
 
 ```text
-Belum ada.
-Ini salah satu step paling penting yang hilang.
-Mobile saat ini langsung menyediakan tombol Konfirmasi tanpa UI review bukti pembayaran.
+Sudah masuk.
+Mobile memiliki tab cek bukti, preview/popup bukti pembayaran, tombol verifikasi pembayaran, dan tombol tolak pembayaran dengan alasan.
 ```
 
 Catatan penting:
@@ -361,8 +358,10 @@ Jika sudah in_progress/delivering, stok dikembalikan.
 Status integrasi mobile kasir:
 
 ```text
-Sebagian.
-Mobile bisa cancel order pending via API, tetapi API belum mengembalikan stok untuk in_progress/delivering karena mobile belum mengelola status tersebut.
+Sudah masuk untuk flow utama.
+Mobile bisa cancel order pending_payment, pending, in_progress, dan delivering melalui API dengan alasan pembatalan.
+Jika status sudah in_progress/delivering, backend API mengembalikan stok.
+Jika request cancel terkirim ulang saat order sudah canceled/cancelled, backend API membalas sukses agar mobile tidak menampilkan error palsu.
 ```
 
 ## Perbandingan Endpoint Web vs API Mobile
@@ -371,20 +370,25 @@ Mobile bisa cancel order pending via API, tetapi API belum mengembalikan stok un
 
 ```text
 GET   /api/v1/orders/pending
+GET   /api/v1/orders/pending-review
+GET   /api/v1/orders/ready-to-confirm
+GET   /api/v1/orders/in-progress
+GET   /api/v1/orders/{id}
+POST  /api/v1/orders/{id}/payment/verify
+POST  /api/v1/orders/{id}/payment/reject
 POST  /api/v1/orders/{id}/confirm
+POST  /api/v1/orders/{id}/deliver
+POST  /api/v1/orders/{id}/complete
 POST  /api/v1/orders/{id}/cancel
-PATCH /api/v1/transactions/{id}/status
 GET   /api/v1/transactions
 GET   /api/v1/transactions/{id}
+GET   /api/v1/pos/products
+POST  /api/v1/pos/transactions
 ```
 
 ### Endpoint web yang belum punya API setara atau belum dipakai penuh di mobile
 
 ```text
-POST /transactions/{transaction}/payment/verify
-POST /transactions/{transaction}/payment/reject
-POST /transactions/{transaction}/deliver
-POST /transactions/{transaction}/complete-order
 GET  /kasir/deliveries
 GET  /kasir/deliveries/{delivery}
 POST /kasir/deliveries/{delivery}/accept
@@ -395,6 +399,11 @@ POST /transactions/remove-from-cart
 POST /transactions/complete
 GET  /transactions/receipt/{id}
 ```
+
+Catatan:
+
+- Endpoint payment/order utama sudah punya padanan API mobile.
+- Endpoint delivery khusus `/kasir/deliveries/*` dan cetak receipt web belum masuk mobile.
 
 ## Gap Data Model Mobile
 
@@ -436,28 +445,13 @@ Tanpa field tersebut, mobile tidak bisa meniru flow web kasir dengan benar.
 
 ## Gap UI Mobile Kasir
 
-Yang belum ada di mobile:
+Yang masih belum matang di mobile:
 
-1. Tab/section "Menunggu Review Pembayaran".
-2. Preview bukti pembayaran.
-3. Fullscreen image viewer untuk bukti pembayaran.
-4. Tombol "Verifikasi Pembayaran".
-5. Tombol "Tolak Pembayaran".
-6. Badge `payment_status`.
-7. Badge `order_type`: dine-in atau delivery.
-8. Nomor meja untuk dine-in.
-9. Data penerima/alamat/HP untuk delivery.
-10. Section "Sedang Diproses".
-11. Tombol "Tandai Sedang Diantar".
-12. Tombol "Selesaikan Pesanan".
-13. Cetak/download struk POS mobile dari `receipt_url`.
-14. Keranjang POS lanjutan.
-15. Input uang dibayar.
-16. Hitung kembalian.
-17. Complete transaksi cash.
-18. Cetak/download struk.
-19. Riwayat order yang sudah diproses.
-20. Filter status order.
+1. Riwayat order yang sudah selesai/dibatalkan.
+2. Filter/search order.
+3. Notifikasi visual/audio yang lebih matang.
+4. Cetak/download struk POS mobile dari `receipt_url`.
+5. Delivery management khusus `/kasir/deliveries/*`.
 
 ## Rekomendasi Integrasi Berikutnya
 

@@ -3,33 +3,33 @@ import 'package:flutter/material.dart';
 class AppTheme {
   const AppTheme._();
 
-  static const Color primary = Color(0xFF004532);
-  static const Color primaryContainer = Color(0xFF065F46);
-  static const Color onPrimaryContainer = Color(0xFF8BD6B7);
-  static const Color secondary = Color(0xFF565E74);
-  static const Color secondaryContainer = Color(0xFFDAE2FD);
-  static const Color tertiary = Color(0xFF652925);
-  static const Color tertiaryContainer = Color(0xFFFFDAD6);
-  static const Color background = Color(0xFFF8F9FF);
+  static const Color primary = Color(0xFF271310);
+  static const Color primaryContainer = Color(0xFF3E2723);
+  static const Color onPrimaryContainer = Color(0xFFFFDAD4);
+  static const Color secondary = Color(0xFF655D4F);
+  static const Color secondaryContainer = Color(0xFFEADECC);
+  static const Color tertiary = Color(0xFF360700);
+  static const Color tertiaryContainer = Color(0xFFFFDBD1);
+  static const Color background = Color(0xFFFFF8F6);
   static const Color surface = Color(0xFFFFFFFF);
-  static const Color surfaceLow = Color(0xFFEFF4FF);
-  static const Color surfaceContainer = Color(0xFFE5EEFF);
-  static const Color surfaceContainerHigh = Color(0xFFDCE9FF);
-  static const Color onSurface = Color(0xFF0B1C30);
-  static const Color onSurfaceVariant = Color(0xFF3F4944);
-  static const Color outline = Color(0xFF6F7973);
-  static const Color outlineVariant = Color(0xFFBEC9C2);
+  static const Color surfaceLow = Color(0xFFFFF1ED);
+  static const Color surfaceContainer = Color(0xFFFFE9E3);
+  static const Color surfaceContainerHigh = Color(0xFFFFE2DA);
+  static const Color onSurface = Color(0xFF2C160E);
+  static const Color onSurfaceVariant = Color(0xFF504442);
+  static const Color outline = Color(0xFF827472);
+  static const Color outlineVariant = Color(0xFFD3C3C0);
   static const Color error = Color(0xFFBA1A1A);
   static const Color errorContainer = Color(0xFFFFDAD6);
 
   static const Color coffeeBrown = primary;
-  static const Color coffeeBrownDark = Color(0xFF002116);
+  static const Color coffeeBrownDark = Color(0xFF2B1613);
   static const Color cream = secondaryContainer;
   static const Color warmOrange = tertiary;
   static const Color lightBackground = background;
-  static const Color darkBackground = Color(0xFF111827);
+  static const Color darkBackground = Color(0xFF1D100C);
   static const Color lightSurface = surface;
-  static const Color darkSurface = Color(0xFF1F2937);
+  static const Color darkSurface = Color(0xFF2B1A15);
 
   static ThemeData get lightTheme {
     const colorScheme = ColorScheme(
@@ -41,11 +41,11 @@ class AppTheme {
       secondary: secondary,
       onSecondary: Colors.white,
       secondaryContainer: secondaryContainer,
-      onSecondaryContainer: Color(0xFF3F465C),
+      onSecondaryContainer: Color(0xFF4D4638),
       tertiary: tertiary,
       onTertiary: Colors.white,
       tertiaryContainer: tertiaryContainer,
-      onTertiaryContainer: Color(0xFF3B0908),
+      onTertiaryContainer: Color(0xFF3B0900),
       error: error,
       onError: Colors.white,
       errorContainer: errorContainer,
@@ -57,10 +57,10 @@ class AppTheme {
       outlineVariant: outlineVariant,
       shadow: Colors.black,
       scrim: Colors.black,
-      inverseSurface: Color(0xFF213145),
-      onInverseSurface: Color(0xFFEAF1FF),
-      inversePrimary: Color(0xFF8BD6B6),
-      surfaceTint: Color(0xFF1B6B51),
+      inverseSurface: Color(0xFF442A22),
+      onInverseSurface: Color(0xFFFFEDE8),
+      inversePrimary: Color(0xFFE3BEB8),
+      surfaceTint: Color(0xFF745853),
     );
 
     return ThemeData(
@@ -100,8 +100,8 @@ class AppTheme {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       ),
       snackBarTheme: SnackBarThemeData(
-        backgroundColor: const Color(0xFF213145),
-        contentTextStyle: const TextStyle(color: Color(0xFFEAF1FF)),
+        backgroundColor: const Color(0xFF442A22),
+        contentTextStyle: const TextStyle(color: Color(0xFFFFEDE8)),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         behavior: SnackBarBehavior.floating,
       ),
@@ -112,7 +112,7 @@ class AppTheme {
     final colorScheme = ColorScheme.fromSeed(
       seedColor: primary,
       brightness: Brightness.dark,
-      primary: const Color(0xFF8BD6B6),
+      primary: const Color(0xFFE3BEB8),
       secondary: secondaryContainer,
       tertiary: tertiaryContainer,
       surface: darkSurface,
@@ -125,7 +125,7 @@ class AppTheme {
       scaffoldBackgroundColor: darkBackground,
       appBarTheme: const AppBarTheme(
         backgroundColor: darkBackground,
-        foregroundColor: Color(0xFF8BD6B6),
+        foregroundColor: Color(0xFFE3BEB8),
         centerTitle: false,
         elevation: 0,
         scrolledUnderElevation: 0,
@@ -142,10 +142,10 @@ class AppTheme {
 
   static TextTheme _textTheme(Brightness brightness) {
     final textColor = brightness == Brightness.dark
-        ? const Color(0xFFEAF1FF)
+        ? const Color(0xFFFFEDE8)
         : onSurface;
     final mutedColor = brightness == Brightness.dark
-        ? const Color(0xFFCBD5E1)
+        ? const Color(0xFFE3BEB8)
         : onSurfaceVariant;
 
     return TextTheme(
@@ -249,7 +249,7 @@ class AppTheme {
 
     return InputDecorationTheme(
       filled: true,
-      fillColor: surface,
+      fillColor: colorScheme.surface,
       border: border,
       enabledBorder: border,
       focusedBorder: border.copyWith(

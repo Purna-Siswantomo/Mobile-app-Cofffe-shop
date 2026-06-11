@@ -2,8 +2,14 @@ const String kBaseUrl = ApiConstants.kBaseUrl;
 const String kBaseUrlProd = ApiConstants.kBaseUrlProd;
 
 class ApiConstants {
-  static const String kBaseUrl = 'http://10.0.2.2:8001/api/v1';
-  static const String kBaseUrlProd = 'http://127.0.0.1:8001/api/v1';
+  static const String kBaseUrl = String.fromEnvironment(
+    'API_BASE_URL',
+    defaultValue: 'http://172.10.98.90:8001/api/v1',
+  );
+  static const String kBaseUrlProd = String.fromEnvironment(
+    'API_BASE_URL_PROD',
+    defaultValue: kBaseUrl,
+  );
 }
 
 class ApiEndpoints {
@@ -12,6 +18,7 @@ class ApiEndpoints {
   static const String kMe = '/auth/me';
   static const String kDashboard = '/dashboard';
   static const String kProducts = '/products';
+  static const String kProductCategories = '/products/categories';
   static const String kTransactions = '/transactions';
   static const String kReportsSummary = '/reports/summary';
   static const String kReportsExport = '/reports/export';

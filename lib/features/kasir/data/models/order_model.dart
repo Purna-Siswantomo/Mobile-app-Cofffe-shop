@@ -37,6 +37,15 @@ class OrderModel with _$OrderModel {
 
   bool get isCanceled => status == 'cancelled' || status == 'canceled';
 
+  bool get canBeCanceledByKasir =>
+      status == 'pending_payment' ||
+      status == 'pending' ||
+      status == 'in_progress' ||
+      status == 'delivering';
+
+  bool get canBeConfirmedByKasir =>
+      status == 'pending' && paymentStatus == 'verified';
+
   int get resolvedItemCount => itemCount ?? details.length;
 
   String get statusLabel => switch (status) {

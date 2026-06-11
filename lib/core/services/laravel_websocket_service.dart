@@ -28,6 +28,8 @@ class LaravelWebSocketService extends ChangeNotifier {
   WebSocketChannel? _channel;
   StreamSubscription<dynamic>? _subscription;
   Timer? _mockTimer;
+  Timer? _reconnectTimer;
+  bool _shouldReconnect = false;
   bool _isInitialized = false;
   bool _isMock = false;
   RealtimeConnectionStatus _status = RealtimeConnectionStatus.disconnected;
@@ -37,6 +39,7 @@ class LaravelWebSocketService extends ChangeNotifier {
   bool get isConnected => _status == RealtimeConnectionStatus.connected;
 
   Future<void> init(WidgetRef ref) async {
+    _shouldReconnect = true;
     if (_isInitialized) {
       return;
     }
@@ -61,14 +64,14 @@ class LaravelWebSocketService extends ChangeNotifier {
             error: error,
             stackTrace: stackTrace,
           );
-          _setStatus(RealtimeConnectionStatus.disconnected);
+          _handleDisconnect(ref);
         },
         onDone: () {
           log(
             'Laravel WebSocket disconnected',
             name: 'LaravelWebSocketService',
           );
-          _setStatus(RealtimeConnectionStatus.disconnected);
+          _handleDisconnect(ref);
         },
         cancelOnError: false,
       );
@@ -89,6 +92,9 @@ class LaravelWebSocketService extends ChangeNotifier {
   }
 
   Future<void> disconnect() async {
+    _shouldReconnect = false;
+    _reconnectTimer?.cancel();
+    _reconnectTimer = null;
     _mockTimer?.cancel();
     _mockTimer = null;
     _isInitialized = false;
@@ -108,6 +114,8 @@ class LaravelWebSocketService extends ChangeNotifier {
       final event = payload['event']?.toString();
 
       if (event == 'pusher:connection_established') {
+        _reconnectTimer?.cancel();
+        _reconnectTimer = null;
         _setStatus(RealtimeConnectionStatus.connected);
         _subscribeToOrders();
         return;
@@ -189,6 +197,27 @@ class LaravelWebSocketService extends ChangeNotifier {
         'data': {'channel': WebSocketConstants.kOrderChannel},
       }),
     );
+  }
+
+  void _handleDisconnect(WidgetRef ref) {
+    _subscription?.cancel();
+    _subscription = null;
+    _channel = null;
+    _isInitialized = false;
+    _setStatus(RealtimeConnectionStatus.disconnected);
+    _scheduleReconnect(ref);
+  }
+
+  void _scheduleReconnect(WidgetRef ref) {
+    if (!_shouldReconnect || _isMock || _reconnectTimer?.isActive == true) {
+      return;
+    }
+
+    _reconnectTimer = Timer(const Duration(seconds: 5), () {
+      if (_shouldReconnect && !_isInitialized) {
+        init(ref);
+      }
+    });
   }
 
   void _startMockOrders(WidgetRef ref) {

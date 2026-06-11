@@ -33,6 +33,9 @@ Perubahan penting dari summary awal:
 - Flow kasir sudah diperluas: pending review, verifikasi/tolak pembayaran, ready-to-confirm, in-progress, deliver, complete, cancel, dan POS cash.
 - Admin reports sudah terhubung ke endpoint transaksi sebagai list dasar, walaupun filter/export/detail penuh belum selesai.
 - Backend API admin sudah diperluas untuk user management, notification management, delivery setting, report summary, dan report export rows. Mobile admin untuk fitur-fitur itu belum dibuat kecuali report/transaksi dasar.
+- Product CRUD admin mobile sudah mendukung upload gambar dari galeri/kamera memakai multipart, preview gambar, kategori dari backend, dan tambah kategori lokal yang tersimpan saat produk dibuat/disimpan.
+- URL gambar upload produk dan bukti pembayaran memakai endpoint publik API `/api/v1/public/storage/{path}` agar bisa diakses dari HP fisik tanpa bergantung pada symlink `/storage`.
+- Cancel order kasir sudah dibuat idempotent di API: request ulang pada order yang sudah `canceled` tidak lagi dianggap error. Dialog alasan cancel memakai widget stateful agar tidak memicu assertion Flutter `_dependents.isEmpty`.
 
 ## Inisialisasi Project
 
@@ -224,11 +227,18 @@ Saat login berhasil:
 
 Fungsi:
 
-- `getProducts({int page = 1})`
+- `getProducts({int page = 1, String? search, String? category, String? stockStatus})`
 - `getProduct(int id)`
-- `createProduct(Map<String, dynamic> data)`
-- `updateProduct(int id, Map<String, dynamic> data)`
+- `getCategories()`
+- `createProduct(Map<String, dynamic> data, {String? imagePath})`
+- `updateProduct(int id, Map<String, dynamic> data, {String? imagePath})`
 - `deleteProduct(int id)`
+
+Catatan:
+
+- Upload gambar dari galeri/kamera dikirim sebagai `multipart/form-data` dengan field `image`.
+- URL eksternal tetap didukung melalui field `image_url`.
+- Kategori produk diambil dari `/products/categories`. Kategori baru pada form mobile tersimpan saat produk dibuat/disimpan.
 
 ### DashboardRepository
 
@@ -241,9 +251,24 @@ Fungsi:
 Fungsi:
 
 - `getPendingOrders()`
+- `getPendingReviewOrders()`
+- `getReadyToConfirmOrders()`
+- `getInProgressOrders()`
+- `getOrder(int id)`
+- `verifyPayment(int id)`
+- `rejectPayment(int id, String reason)`
 - `confirmOrder(int id)`
+- `deliverOrder(int id)`
+- `completeOrder(int id)`
 - `cancelOrder(int id, String reason)`
-- `updateOrderStatus(int id, String status)`
+- `getPosProducts()`
+- `createPosTransaction(...)`
+
+Catatan:
+
+- Cancel order wajib mengirim `reason`.
+- Backend menerima status `pending_payment`, `pending`, `in_progress`, dan `delivering`.
+- Request cancel ulang pada order yang sudah `canceled/cancelled` mengembalikan response sukses agar UI tidak menampilkan error palsu.
 
 Semua repository menggunakan `DioClient`, melakukan parsing JSON ke model, dan melempar `AppException` saat error.
 
@@ -357,6 +382,9 @@ lib/shared/widgets/app_error_widget.dart
 lib/shared/widgets/empty_state_widget.dart
 lib/shared/widgets/status_badge.dart
 lib/shared/widgets/connection_indicator.dart
+lib/shared/widgets/payment_proof_viewer.dart
+lib/shared/widgets/dialog_action_row.dart
+lib/shared/widgets/reason_dialog.dart
 lib/shared/utils/currency_formatter.dart
 ```
 
@@ -367,6 +395,8 @@ Fungsi:
 - Empty state
 - Badge status order
 - Indicator koneksi real-time
+- Popup bukti pembayaran fleksibel
+- Dialog alasan untuk cancel/reject order kasir
 - Formatter Rupiah: `Rp 1.500.000`
 
 ## Auth Screen
@@ -517,10 +547,14 @@ Fitur:
   - nama
   - kategori
   - deskripsi
+  - URL gambar opsional
   - harga
   - stok
-- Placeholder upload gambar
+- Upload gambar dari galeri/kamera menggunakan `image_picker`
+- Preview gambar dari file lokal atau URL backend
+- Dropdown kategori dari backend dan tombol tambah kategori lokal
 - Validasi field wajib
+- Foto produk wajib diisi saat create
 - Tombol `Simpan` dengan loading state
 - Setelah simpan berhasil:
   - pop screen

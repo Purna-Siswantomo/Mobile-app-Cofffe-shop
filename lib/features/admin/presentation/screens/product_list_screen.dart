@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/network/app_exception.dart';
 import '../../../../shared/widgets/app_error_widget.dart';
+import '../../../../shared/widgets/dialog_action_row.dart';
 import '../../../../shared/widgets/empty_state_widget.dart';
 import '../../../../shared/widgets/loading_widget.dart';
 import '../providers/product_provider.dart';
@@ -15,6 +16,7 @@ class ProductListScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final productsState = ref.watch(productsProvider);
+    final gridDelegate = _productGridDelegate(context);
 
     return Scaffold(
       appBar: AppBar(
@@ -37,12 +39,7 @@ class ProductListScreen extends ConsumerWidget {
         child: productsState.when(
           loading: () => GridView.builder(
             padding: const EdgeInsets.all(16),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              crossAxisSpacing: 12,
-              mainAxisSpacing: 12,
-              childAspectRatio: 0.64,
-            ),
+            gridDelegate: gridDelegate,
             itemBuilder: (_, __) => const LoadingWidget.card(),
             itemCount: 6,
           ),
@@ -66,12 +63,7 @@ class ProductListScreen extends ConsumerWidget {
 
             return GridView.builder(
               padding: const EdgeInsets.all(16),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                crossAxisSpacing: 12,
-                mainAxisSpacing: 12,
-                childAspectRatio: 0.64,
-              ),
+              gridDelegate: gridDelegate,
               itemBuilder: (context, index) {
                 final product = products[index];
 
@@ -90,6 +82,20 @@ class ProductListScreen extends ConsumerWidget {
     );
   }
 
+  SliverGridDelegateWithFixedCrossAxisCount _productGridDelegate(
+    BuildContext context,
+  ) {
+    final width = MediaQuery.sizeOf(context).width;
+    final crossAxisCount = width < 340 ? 1 : 2;
+
+    return SliverGridDelegateWithFixedCrossAxisCount(
+      crossAxisCount: crossAxisCount,
+      crossAxisSpacing: 12,
+      mainAxisSpacing: 12,
+      childAspectRatio: crossAxisCount == 1 ? 1.55 : 0.58,
+    );
+  }
+
   Future<void> _confirmDelete(
     BuildContext context,
     WidgetRef ref,
@@ -102,17 +108,12 @@ class ProductListScreen extends ConsumerWidget {
             title: const Text('Hapus produk?'),
             content: const Text('Produk yang dihapus tidak bisa dikembalikan.'),
             actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(false),
-                child: const Text('Batal'),
-              ),
-              ElevatedButton(
-                onPressed: () => Navigator.of(context).pop(true),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Theme.of(context).colorScheme.error,
-                  foregroundColor: Theme.of(context).colorScheme.onError,
-                ),
-                child: const Text('Hapus'),
+              DialogActionRow(
+                cancelLabel: 'Batal',
+                confirmLabel: 'Hapus',
+                isDestructive: true,
+                onCancel: () => Navigator.of(context).pop(false),
+                onConfirm: () => Navigator.of(context).pop(true),
               ),
             ],
           ),

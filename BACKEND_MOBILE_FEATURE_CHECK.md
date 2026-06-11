@@ -16,7 +16,7 @@ Sumber pengecekan:
 |---|---|---|
 | Auth API | Sudah sesuai | Login/logout/me sudah dibuat dan `is_active` sudah dimapping ke `isActive`. |
 | Admin Dashboard API | Sudah sesuai | Field dashboard snake_case backend sudah dimapping ke model mobile. |
-| Products API | Sudah sesuai untuk CRUD JSON | CRUD produk sudah dibuat, `image_url`, `created_at`, dan decimal string `price` sudah ditangani. Upload gambar file belum dibuat. |
+| Products API | Sudah sesuai untuk CRUD JSON dan multipart | CRUD produk sudah dibuat, `image_url`, `gambar_url`, upload gambar file, kategori, `created_at`, dan decimal string `price` sudah ditangani. |
 | Orders Kasir API | Sudah masuk cukup lengkap | Pending review, ready-to-confirm, in-progress, verify/reject payment, confirm, deliver, complete, cancel, dan POS sudah dibuat. |
 | Transactions API Admin | Sudah masuk sebagian besar | `TransactionModel`, repository, provider, filter report, list, dan detail transaksi sudah ada. |
 | Reports API Admin | Backend siap, mobile sebagian | Backend punya `/reports/summary` dan `/reports/export`; mobile masih memakai `/transactions` untuk laporan dasar. |
@@ -24,7 +24,7 @@ Sumber pengecekan:
 | Member Menu/Ordering | Belum masuk mobile | Backend fitur member masih web route, tidak ada API mobile. |
 | Favorites | Belum masuk mobile | Backend web only. |
 | Delivery | Masuk sebagian | Mobile kasir bisa membaca data delivery dan mengubah status deliver/complete; backend admin delivery setting API sudah ada, mobile admin belum. |
-| Payment QRIS Upload/Verify | Masuk sebagian | Upload bukti masih dari web/member, tetapi kasir mobile sudah bisa melihat, verify, dan reject bukti pembayaran. |
+| Payment QRIS Upload/Verify | Masuk sebagian | Upload bukti masih dari web/member, tetapi kasir mobile sudah bisa melihat popup bukti pembayaran, verify, dan reject bukti pembayaran. |
 | Admin User Management | Backend API siap, mobile belum | API `/users` sudah tersedia untuk list/create/detail/update/toggle/delete. |
 | Admin Notification Management | Backend API siap, mobile belum | API `/notifications` dan `/notifications/broadcast` sudah tersedia. |
 | Profile Management | Belum masuk mobile | Backend web route. |
@@ -233,6 +233,7 @@ Endpoint:
 
 ```text
 GET    /api/v1/products
+GET    /api/v1/products/categories
 POST   /api/v1/products
 GET    /api/v1/products/{id}
 PUT    /api/v1/products/{id}
@@ -254,6 +255,17 @@ Response produk backend memakai:
 }
 ```
 
+Untuk produk dengan file upload, backend juga mengirim:
+
+```json
+{
+  "image": "products/example.jpg",
+  "gambar_url": "/api/v1/public/storage/products/example.jpg"
+}
+```
+
+`gambar_url` dapat berupa URL eksternal jika produk dibuat memakai `image_url`, atau path publik API jika gambar berasal dari upload.
+
 ### Mobile
 
 Sudah masuk:
@@ -270,7 +282,7 @@ lib/features/admin/presentation/widgets/product_card.dart
 Status:
 
 ```text
-CRUD produk sudah masuk.
+CRUD produk sudah masuk, termasuk upload gambar dari galeri/kamera dan kategori.
 ```
 
 Catatan penting:
@@ -279,12 +291,14 @@ Catatan penting:
 - Backend field `created_at`, mobile `createdAt`.
 - Backend `price` bisa berupa string `"18000.00"`, mobile `double`.
 - Freezed generated default tidak otomatis parse string ke double.
+- Upload file dikirim sebagai `multipart/form-data` field `image`.
+- Kategori diambil dari `/products/categories`. Tambah kategori di mobile menambahkan pilihan lokal, lalu kategori tersimpan saat produk dibuat/disimpan.
 
-Rekomendasi:
+Status rekomendasi integrasi:
 
-- Tambahkan `@JsonKey(name: 'image_url')`
-- Tambahkan `@JsonKey(name: 'created_at')`
-- Tambahkan converter untuk `price` dari string/double/int ke double
+- Mapping `image_url`, `created_at`, dan converter numeric sudah diterapkan.
+- `gambar_url` dinormalisasi untuk render gambar produk.
+- Kategori belum punya CRUD/tabel mandiri; backend masih memakai field `products.category`.
 
 ## 4. Orders Kasir
 
@@ -301,9 +315,16 @@ Endpoint:
 
 ```text
 GET   /api/v1/orders/pending
+GET   /api/v1/orders/pending-review
+GET   /api/v1/orders/ready-to-confirm
+GET   /api/v1/orders/in-progress
+GET   /api/v1/orders/{id}
+POST  /api/v1/orders/{id}/payment/verify
+POST  /api/v1/orders/{id}/payment/reject
 POST  /api/v1/orders/{id}/confirm
+POST  /api/v1/orders/{id}/deliver
+POST  /api/v1/orders/{id}/complete
 POST  /api/v1/orders/{id}/cancel
-PATCH /api/v1/transactions/{id}/status
 ```
 
 Response pending order backend:
@@ -347,15 +368,16 @@ Catatan penting:
 - Backend memakai `created_at`, mobile `createdAt`.
 - Backend tidak mengirim `total_amount`; backend mengirim `total` dan `grand_total`.
 - Backend tidak mengirim `item_count` di endpoint pending, tetapi punya `details`.
-- Status cancel backend adalah `canceled`, mobile label hanya mengenali `cancelled`.
+- Status cancel backend adalah `canceled`; mobile sekarang mengenali `canceled` dan `cancelled`.
+- Cancel API idempotent: jika order sudah `canceled/cancelled`, backend membalas sukses agar request ganda tidak memunculkan error palsu.
+- `payment_proof_url` memakai `/api/v1/public/storage/{path}` agar gambar bukti pembayaran bisa dibuka dari mobile.
 
-Rekomendasi:
+Status rekomendasi integrasi:
 
-- Mapping `user_id`, `payment_method`, `created_at`.
-- Hitung `itemCount` dari `details.length` jika `item_count` tidak ada.
-- Ambil total dari `grand_total` atau `total`.
-- Tambahkan label status `canceled`.
-- Tambahkan model `OrderItemModel` untuk `details.product`.
+- Mapping `user_id`, `payment_method`, `created_at`, `payment_status`, `order_type`, dan `delivery` sudah masuk.
+- `itemCount` dihitung dari `item_count` atau `details.length`.
+- Total dibaca dari `total_amount`, `grand_total`, atau `total`.
+- Model detail order dan product summary sudah dibuat.
 
 ## 5. Transaction Admin
 

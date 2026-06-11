@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 
 import '../../../../core/network/app_exception.dart';
 import '../../../../shared/utils/currency_formatter.dart';
@@ -55,11 +56,18 @@ class _AdminManagementAppBar extends StatelessWidget
   Size get preferredSize => const Size.fromHeight(kToolbarHeight + 48);
 }
 
-class _UsersTab extends ConsumerWidget {
+class _UsersTab extends ConsumerStatefulWidget {
   const _UsersTab();
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<_UsersTab> createState() => _UsersTabState();
+}
+
+class _UsersTabState extends ConsumerState<_UsersTab> {
+  String? _selectedRole;
+
+  @override
+  Widget build(BuildContext context) {
     final usersState = ref.watch(adminUsersProvider);
 
     return RefreshIndicator(
@@ -70,32 +78,53 @@ class _UsersTab extends ConsumerWidget {
           error: error,
           onRetry: () => ref.invalidate(adminUsersProvider),
         ),
-        data: (result) => ListView(
-          padding: const EdgeInsets.all(16),
-          children: [
-            _StatsWrap(stats: result.stats),
-            const SizedBox(height: 12),
-            ElevatedButton.icon(
-              onPressed: () => _showUserForm(context, ref),
-              icon: const Icon(Icons.person_add_alt),
-              label: const Text('Tambah User'),
-            ),
-            const SizedBox(height: 12),
-            if (result.users.isEmpty)
-              const EmptyStateWidget(
-                icon: Icons.people_outline,
-                title: 'Belum ada user',
-                subtitle: 'User admin, kasir, dan member akan tampil di sini.',
-              )
-            else
-              ...result.users.map(
-                (user) => Padding(
-                  padding: const EdgeInsets.only(bottom: 10),
-                  child: _UserTile(user: user),
-                ),
+        data: (result) {
+          final roles = _sortedUnique(result.users.map((user) => user.role));
+          final users = _selectedRole == null
+              ? result.users
+              : result.users
+                    .where((user) => user.role == _selectedRole)
+                    .toList();
+
+          return ListView(
+            padding: const EdgeInsets.all(16),
+            children: [
+              _FilterChips(
+                label: 'Role',
+                options: roles,
+                selectedValue: _selectedRole,
+                labelFor: _roleLabel,
+                countFor: (role) =>
+                    result.users.where((user) => user.role == role).length,
+                onSelected: (value) => setState(() => _selectedRole = value),
               ),
-          ],
-        ),
+              const SizedBox(height: 12),
+              ElevatedButton.icon(
+                onPressed: () => _showUserForm(context, ref),
+                icon: const Icon(Icons.person_add_alt),
+                label: const Text('Tambah User'),
+              ),
+              const SizedBox(height: 12),
+              if (users.isEmpty)
+                EmptyStateWidget(
+                  icon: Icons.people_outline,
+                  title: _selectedRole == null
+                      ? 'Belum ada user'
+                      : 'User ${_roleLabel(_selectedRole!)} kosong',
+                  subtitle: _selectedRole == null
+                      ? 'User admin, kasir, dan member akan tampil di sini.'
+                      : 'Tidak ada user pada filter ini.',
+                )
+              else
+                ...users.map(
+                  (user) => Padding(
+                    padding: const EdgeInsets.only(bottom: 10),
+                    child: _UserTile(user: user),
+                  ),
+                ),
+            ],
+          );
+        },
       ),
     );
   }
@@ -242,11 +271,18 @@ class _UserTile extends ConsumerWidget {
   }
 }
 
-class _NotificationsTab extends ConsumerWidget {
+class _NotificationsTab extends ConsumerStatefulWidget {
   const _NotificationsTab();
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<_NotificationsTab> createState() => _NotificationsTabState();
+}
+
+class _NotificationsTabState extends ConsumerState<_NotificationsTab> {
+  String? _selectedType;
+
+  @override
+  Widget build(BuildContext context) {
     final state = ref.watch(adminNotificationsProvider);
 
     return RefreshIndicator(
@@ -257,32 +293,56 @@ class _NotificationsTab extends ConsumerWidget {
           error: error,
           onRetry: () => ref.invalidate(adminNotificationsProvider),
         ),
-        data: (result) => ListView(
-          padding: const EdgeInsets.all(16),
-          children: [
-            _StatsWrap(stats: result.stats),
-            const SizedBox(height: 12),
-            ElevatedButton.icon(
-              onPressed: () => _showNotificationForm(context, ref),
-              icon: const Icon(Icons.add_alert_outlined),
-              label: const Text('Tambah Notifikasi'),
-            ),
-            const SizedBox(height: 12),
-            if (result.notifications.isEmpty)
-              const EmptyStateWidget(
-                icon: Icons.notifications_none,
-                title: 'Belum ada notifikasi',
-                subtitle: 'Notifikasi broadcast akan tampil di sini.',
-              )
-            else
-              ...result.notifications.map(
-                (notification) => Padding(
-                  padding: const EdgeInsets.only(bottom: 10),
-                  child: _NotificationTile(notification: notification),
-                ),
+        data: (result) {
+          final types = _sortedUnique(
+            result.notifications.map((notification) => notification.type),
+          );
+          final notifications = _selectedType == null
+              ? result.notifications
+              : result.notifications
+                    .where((notification) => notification.type == _selectedType)
+                    .toList();
+
+          return ListView(
+            padding: const EdgeInsets.all(16),
+            children: [
+              _FilterChips(
+                label: 'Tipe',
+                options: types,
+                selectedValue: _selectedType,
+                labelFor: _notificationTypeLabel,
+                countFor: (type) => result.notifications
+                    .where((notification) => notification.type == type)
+                    .length,
+                onSelected: (value) => setState(() => _selectedType = value),
               ),
-          ],
-        ),
+              const SizedBox(height: 12),
+              ElevatedButton.icon(
+                onPressed: () => _showNotificationForm(context, ref),
+                icon: const Icon(Icons.add_alert_outlined),
+                label: const Text('Tambah Notifikasi'),
+              ),
+              const SizedBox(height: 12),
+              if (notifications.isEmpty)
+                EmptyStateWidget(
+                  icon: Icons.notifications_none,
+                  title: _selectedType == null
+                      ? 'Belum ada notifikasi'
+                      : 'Notifikasi ${_notificationTypeLabel(_selectedType!)} kosong',
+                  subtitle: _selectedType == null
+                      ? 'Notifikasi broadcast akan tampil di sini.'
+                      : 'Tidak ada notifikasi pada filter ini.',
+                )
+              else
+                ...notifications.map(
+                  (notification) => Padding(
+                    padding: const EdgeInsets.only(bottom: 10),
+                    child: _NotificationTile(notification: notification),
+                  ),
+                ),
+            ],
+          );
+        },
       ),
     );
   }
@@ -490,20 +550,47 @@ class _ReportSummaryTab extends ConsumerWidget {
         data: (summary) => ListView(
           padding: const EdgeInsets.all(16),
           children: [
-            _SummaryCard(
-              label: 'Total transaksi',
-              value: '${summary.totalTransactions}',
-              icon: Icons.receipt_long,
-            ),
-            _SummaryCard(
-              label: 'Total revenue',
-              value: CurrencyFormatter.formatRupiah(summary.totalRevenue),
-              icon: Icons.payments_outlined,
-            ),
-            _SummaryCard(
-              label: 'Total item',
-              value: '${summary.totalItems}',
-              icon: Icons.inventory_2_outlined,
+            _SummaryHeader(summary: summary),
+            const SizedBox(height: 16),
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final crossAxisCount = constraints.maxWidth >= 620 ? 3 : 1;
+
+                return GridView.count(
+                  crossAxisCount: crossAxisCount,
+                  crossAxisSpacing: 12,
+                  mainAxisSpacing: 12,
+                  childAspectRatio: crossAxisCount == 1 ? 3.35 : 1.25,
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  children: [
+                    _SummaryMetricCard(
+                      label: 'Transaksi',
+                      value: NumberFormat.decimalPattern(
+                        'id_ID',
+                      ).format(summary.totalTransactions),
+                      icon: Icons.receipt_long_outlined,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                    _SummaryMetricCard(
+                      label: 'Revenue',
+                      value: CurrencyFormatter.formatRupiah(
+                        summary.totalRevenue,
+                      ),
+                      icon: Icons.payments_outlined,
+                      color: Theme.of(context).colorScheme.tertiary,
+                    ),
+                    _SummaryMetricCard(
+                      label: 'Item Terjual',
+                      value: NumberFormat.decimalPattern(
+                        'id_ID',
+                      ).format(summary.totalItems),
+                      icon: Icons.inventory_2_outlined,
+                      color: Theme.of(context).colorScheme.secondary,
+                    ),
+                  ],
+                );
+              },
             ),
           ],
         ),
@@ -512,45 +599,195 @@ class _ReportSummaryTab extends ConsumerWidget {
   }
 }
 
-class _StatsWrap extends StatelessWidget {
-  const _StatsWrap({required this.stats});
+class _FilterChips extends StatelessWidget {
+  const _FilterChips({
+    required this.label,
+    required this.options,
+    required this.selectedValue,
+    required this.labelFor,
+    required this.countFor,
+    required this.onSelected,
+  });
 
-  final Map<String, dynamic> stats;
+  final String label;
+  final List<String> options;
+  final String? selectedValue;
+  final String Function(String value) labelFor;
+  final int Function(String value) countFor;
+  final ValueChanged<String?> onSelected;
 
   @override
   Widget build(BuildContext context) {
-    if (stats.isEmpty) {
-      return const SizedBox.shrink();
-    }
+    final total = options.fold<int>(0, (sum, option) => sum + countFor(option));
 
-    return Wrap(
-      spacing: 8,
-      runSpacing: 8,
-      children: stats.entries.map((entry) {
-        return Chip(label: Text('${entry.key}: ${entry.value}'));
-      }).toList(),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: Theme.of(context).textTheme.labelLarge),
+        const SizedBox(height: 8),
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(right: 8),
+                child: FilterChip(
+                  selected: selectedValue == null,
+                  label: Text('Semua ($total)'),
+                  onSelected: (_) => onSelected(null),
+                ),
+              ),
+              ...options.map(
+                (option) => Padding(
+                  padding: const EdgeInsets.only(right: 8),
+                  child: FilterChip(
+                    selected: selectedValue == option,
+                    label: Text('${labelFor(option)} (${countFor(option)})'),
+                    onSelected: (_) => onSelected(option),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }
 
-class _SummaryCard extends StatelessWidget {
-  const _SummaryCard({
+List<String> _sortedUnique(Iterable<String> values) {
+  return values
+      .map((value) => value.trim())
+      .where((value) => value.isNotEmpty && value != '-')
+      .toSet()
+      .toList()
+    ..sort();
+}
+
+String _roleLabel(String role) {
+  return switch (role) {
+    'admin' => 'Admin',
+    'kasir' => 'Kasir',
+    'member' => 'Member',
+    _ => role,
+  };
+}
+
+String _notificationTypeLabel(String type) {
+  return switch (type) {
+    'info' => 'Info',
+    'warning' => 'Warning',
+    'success' => 'Success',
+    'maintenance' => 'Maintenance',
+    _ => type,
+  };
+}
+
+class _SummaryHeader extends StatelessWidget {
+  const _SummaryHeader({required this.summary});
+
+  final ReportSummary summary;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final average = summary.totalTransactions == 0
+        ? 0
+        : summary.totalRevenue / summary.totalTransactions;
+
+    return Card(
+      color: colorScheme.primary,
+      child: Padding(
+        padding: const EdgeInsets.all(18),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(Icons.analytics_outlined, color: colorScheme.onPrimary),
+            const SizedBox(height: 14),
+            Text(
+              'Ringkasan penjualan',
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                color: colorScheme.onPrimary,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              CurrencyFormatter.formatRupiah(summary.totalRevenue),
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                color: colorScheme.onPrimary,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Rata-rata ${CurrencyFormatter.formatRupiah(average.toDouble())} per transaksi',
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: colorScheme.onPrimary.withValues(alpha: 0.82),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _SummaryMetricCard extends StatelessWidget {
+  const _SummaryMetricCard({
     required this.label,
     required this.value,
     required this.icon,
+    required this.color,
   });
 
   final String label;
   final String value;
   final IconData icon;
+  final Color color;
 
   @override
   Widget build(BuildContext context) {
     return Card(
-      child: ListTile(
-        leading: Icon(icon),
-        title: Text(label),
-        subtitle: Text(value, style: Theme.of(context).textTheme.titleLarge),
+      child: Padding(
+        padding: const EdgeInsets.all(14),
+        child: Row(
+          children: [
+            Container(
+              width: 46,
+              height: 46,
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(icon, color: color),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.labelLarge,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    value,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

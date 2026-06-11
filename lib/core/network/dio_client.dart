@@ -97,7 +97,13 @@ class ErrorInterceptor extends Interceptor {
       case 404:
         return const NotFoundException();
       case 422:
-        return ValidationException(_parseValidationErrors(err.response?.data));
+        final errors = _parseValidationErrors(err.response?.data);
+        if (errors.isNotEmpty) {
+          return ValidationException(errors);
+        }
+        return UnknownException(
+          _parseErrorMessage(err.response?.data) ?? 'Data tidak valid',
+        );
       case 500:
         return const ServerException();
       default:
@@ -120,7 +126,7 @@ class ErrorInterceptor extends Interceptor {
       return const {};
     }
 
-    final rawErrors = data['errors'];
+    final rawErrors = data['errors'] ?? data['data'];
     if (rawErrors is! Map) {
       return const {};
     }
@@ -132,5 +138,18 @@ class ErrorInterceptor extends Interceptor {
 
       return MapEntry(key.toString(), messages);
     });
+  }
+
+  String? _parseErrorMessage(dynamic data) {
+    if (data is! Map) {
+      return null;
+    }
+
+    final message = data['message'];
+    if (message is String && message.trim().isNotEmpty) {
+      return message;
+    }
+
+    return null;
   }
 }

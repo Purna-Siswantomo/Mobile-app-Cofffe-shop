@@ -132,18 +132,27 @@ File konfigurasi API:
 lib/core/constants/api_constants.dart
 ```
 
-Default untuk Android emulator:
+Default aplikasi saat ini:
 
 ```dart
-static const String kBaseUrl = 'http://10.0.2.2:8001/api/v1';
+static const String kBaseUrl = String.fromEnvironment(
+  'API_BASE_URL',
+  defaultValue: 'http://172.10.98.90:8001/api/v1',
+);
 ```
 
-`10.0.2.2` adalah alamat khusus Android emulator untuk mengakses `localhost` komputer.
+Gunakan `--dart-define=API_BASE_URL=...` untuk menyesuaikan host tanpa mengubah source code.
 
-Untuk HP fisik, ganti ke IP LAN komputer, contoh:
+Untuk Android emulator:
 
-```dart
-static const String kBaseUrl = 'http://192.168.1.10:8001/api/v1';
+```powershell
+flutter run --dart-define=API_BASE_URL=http://10.0.2.2:8001/api/v1
+```
+
+Untuk HP fisik pada WiFi yang sama:
+
+```powershell
+flutter run -d <DEVICE_ID> --dart-define=API_BASE_URL=http://192.168.1.10:8001/api/v1
 ```
 
 File konfigurasi WebSocket:
@@ -160,14 +169,17 @@ static const int kWebSocketPort = 6001;
 static const String kWebSocketAppKey = 'arpul-local-key';
 ```
 
-Untuk HP fisik, jalankan dengan `--dart-define`:
+Untuk HP fisik, jalankan API dan WebSocket memakai IP LAN komputer:
 
-```bash
-flutter run ^
-  --dart-define=LARAVEL_WS_HOST=192.168.1.10 ^
-  --dart-define=LARAVEL_WS_PORT=6001 ^
+```powershell
+flutter run -d <DEVICE_ID> `
+  --dart-define=API_BASE_URL=http://192.168.1.10:8001/api/v1 `
+  --dart-define=LARAVEL_WS_HOST=192.168.1.10 `
+  --dart-define=LARAVEL_WS_PORT=6001 `
   --dart-define=LARAVEL_WS_APP_KEY=arpul-local-key
 ```
+
+Catatan PowerShell: gunakan backtick `` ` `` untuk multi-line, bukan caret `^`. Alternatif paling aman adalah satu baris.
 
 ## 5. Akun Testing
 
@@ -271,13 +283,24 @@ Terminal 4: flutter run dengan dart-define host LAN
 
 ### Gambar upload tidak muncul
 
-Jalankan:
+Untuk web Laravel, jalankan:
 
 ```bash
 php artisan storage:link
 ```
 
-Pastikan `APP_URL` sesuai host backend yang dipakai device.
+Untuk mobile, backend mengembalikan URL upload lewat endpoint:
+
+```text
+/api/v1/public/storage/{path}
+```
+
+Jika gambar produk atau bukti pembayaran tidak muncul di HP fisik, cek:
+
+- Laravel berjalan dengan `--host=0.0.0.0 --port=8001`.
+- `API_BASE_URL` mengarah ke IP LAN komputer yang sama dengan HP.
+- File benar-benar ada di `storage/app/public`.
+- Firewall Windows mengizinkan port `8001`.
 
 ### Database kosong
 
