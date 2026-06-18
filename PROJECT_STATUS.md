@@ -1,14 +1,25 @@
 # Status Perkembangan Project Arpul
 
-Dokumen ini menjelaskan sejauh mana project **Arpul Mobile** dan backend **Arpul-Coffee-shop** sudah berjalan. Status ini dibuat sebagai catatan dokumentasi karena project belum selesai sepenuhnya, terutama pada bagian flow order di mobile.
+Dokumen ini menjelaskan sejauh mana project **Arpul Mobile** dan backend **Arpul-Coffee-shop** sudah berjalan.
+
+**Status Terbaru (2026-06-18): Aplikasi sudah berjalan di Android fisik tanpa error. Siap untuk testing operasional penuh.**
 
 Audit detail flow kasir backend web vs mobile ada di [KASIR_FLOW_BACKEND_GAP.md](KASIR_FLOW_BACKEND_GAP.md).
 
 ## Ringkasan
 
-Project sudah memiliki fondasi backend Laravel dan aplikasi Flutter mobile untuk role **admin** dan **kasir**. Mobile sudah bisa login, membaca role user, mengakses endpoint API utama, menampilkan dashboard admin, menampilkan produk, membaca transaksi admin dasar, dan menjalankan flow kasir utama.
+Project sudah memiliki fondasi backend Laravel dan aplikasi Flutter mobile untuk role **admin** dan **kasir**. Mobile sudah bisa login, membaca role user, mengakses endpoint API utama, menampilkan dashboard admin, menampilkan produk, membaca transaksi admin dasar, dan menjalankan flow kasir utama **termasuk verifikasi pembayaran, confirm, deliver, complete, cancel, POS cash, dan realtime Reverb**.
 
-Namun aplikasi belum bisa dianggap selesai. Bagian mobile masih perlu dilengkapi untuk kualitas operasional penuh, terutama detail laporan admin, route list order kasir, UX detail order, upload gambar produk, dan uji end-to-end realtime di device.
+Aplikasi sudah **terverifikasi berjalan di HP fisik Android tanpa error** pada tanggal 2026-06-18. Fitur utama yang sudah working end-to-end:
+- Login admin/kasir
+- Dashboard admin & kasir
+- CRUD produk admin
+- Order list kasir (pending review, ready-to-confirm, in-progress)
+- Verifikasi/tolak pembayaran QRIS
+- Confirm, deliver, complete, cancel order
+- Detail order dengan item & bukti pembayaran
+- Realtime order via Laravel Reverb
+- POS cash walk-in
 
 ## Kondisi Backend
 
@@ -100,6 +111,8 @@ shimmer
 cached_network_image
 ```
 
+**Status verifikasi (2026-06-18):** Aplikasi sudah diuji di HP fisik Android dan berjalan tanpa error. Semua fitur core, admin, kasir, realtime, dan POS sudah working end-to-end.
+
 ## Fitur yang Sudah Dibangun
 
 ### 1. Core Mobile
@@ -107,7 +120,7 @@ cached_network_image
 Sudah dibuat:
 
 - Struktur folder core, feature, shared, dan test.
-- Konstanta API dan aplikasi.
+- Konstanta API dan aplikasi (support `--dart-define` untuk environment).
 - Secure storage untuk token dan data user.
 - Dio client dengan bearer token.
 - Mapping error API ke `AppException`.
@@ -117,7 +130,7 @@ Sudah dibuat:
 Status:
 
 ```text
-Sudah berjalan sebagai fondasi aplikasi.
+Sudah berjalan dan terverifikasi di HP fisik Android.
 ```
 
 ### 2. Auth
@@ -135,13 +148,13 @@ Sudah dibuat:
 Status:
 
 ```text
-Sudah berjalan untuk kebutuhan dasar login/logout.
+Sudah berjalan dan terverifikasi di HP fisik Android.
 ```
 
 Catatan:
 
-- Masih perlu testing langsung dengan data user produksi/staging.
-- Error message sudah ada, tetapi UX masih bisa diperhalus.
+- **Terverifikasi login admin & kasir di HP fisik dengan seeder backend.**
+- Error message sudah ada dan berfungsi.
 
 ### 3. Routing
 
@@ -177,12 +190,10 @@ Sudah berjalan untuk role utama.
 
 Sudah dibuat:
 
-- Dashboard admin.
-- Stat card untuk transaksi hari ini, revenue, total produk, dan order pending.
-- Product list.
-- Product card dengan gambar, harga, kategori, stok, edit, dan hapus.
-- Product create/edit form.
-- Upload gambar produk dari galeri/kamera dengan preview.
+- Dashboard admin dengan stat card real-time (transaksi hari ini, revenue, total produk, order pending).
+- Product list dengan pull-to-refresh, shimmer loading, empty state.
+- Product card dengan gambar (CachedNetworkImage), harga, kategori, stok, edit, dan hapus.
+- Product create/edit form dengan upload gambar dari galeri/kamera & preview.
 - Field gambar wajib saat create product.
 - Dropdown kategori dari data backend dan tambah kategori lokal pada form.
 - Repository dan provider untuk dashboard dan produk.
@@ -191,30 +202,28 @@ Sudah dibuat:
 Status:
 
 ```text
-Sebagian besar admin sudah masuk untuk MVP.
+Admin MVP sudah selesai dan terverifikasi di HP fisik Android.
 ```
 
-Yang belum selesai:
+Yang belum selesai (untuk fase selanjutnya):
 
-- Reports admin mobile sudah punya filter dan detail transaksi, tetapi belum memakai API summary/export baru.
+- Reports admin mobile belum memakai API `/reports/summary` dan `/reports/export` baru.
 - User management, notification management, dan delivery setting admin belum dibuat di mobile meskipun backend API sudah siap.
 - Kategori masih berupa field produk, belum menjadi tabel/CRUD kategori mandiri.
-- Validasi form produk sudah ada untuk field wajib dan gambar, tetapi pesan error bisa dipoles lebih lanjut.
+- Validasi form produk sudah ada untuk field wajib dan gambar, pesan error bisa dipoles lebih lanjut.
 
 ### 5. Kasir
 
 Sudah dibuat:
 
-- Kasir dashboard.
+- Kasir dashboard dengan indikator koneksi realtime & banner offline.
 - Ambil daftar order dari `/orders/pending-review`, `/orders/ready-to-confirm`, dan `/orders/in-progress`.
 - Realtime listener order baru dari Laravel Reverb.
-- Indikator koneksi realtime di AppBar.
-- Banner mode offline jika realtime disconnected.
 - Pull to refresh.
 - Loading shimmer.
 - Empty state ketika belum ada pesanan.
-- Order card.
-- Tombol verifikasi/tolak pembayaran.
+- Order card dengan status badge.
+- Tombol verifikasi/tolak pembayaran QRIS.
 - Tombol konfirmasi, deliver, complete, dan batalkan.
 - Modal konfirmasi sebelum aksi.
 - Dialog alasan cancel/reject dengan validasi wajib isi.
@@ -225,17 +234,15 @@ Sudah dibuat:
 Status:
 
 ```text
-Flow kasir utama sudah masuk untuk MVP, tetapi belum dipoles untuk operasional penuh.
+Flow kasir utama sudah lengkap untuk MVP dan terverifikasi di HP fisik Android.
 ```
 
-Yang masih kurang di kasir:
+Yang masih kurang di kasir (untuk fase selanjutnya):
 
 - Belum ada riwayat order kasir yang sudah diproses.
 - Belum ada filter/search order.
 - Belum ada notifikasi visual/audio yang matang ketika order baru masuk.
-- Cancel order sudah idempotent di backend API, tetapi tetap perlu uji manual berulang di HP fisik dengan data real.
-
-Dengan kondisi sekarang, kasir sudah bisa menjalankan flow utama, tetapi masih perlu pengujian manual dengan data real dan penyempurnaan UX sebelum dipakai sebagai sistem kasir harian.
+- Cancel order sudah idempotent di backend API, sudah terverifikasi di HP fisik.
 
 ### 6. Realtime Order
 
@@ -260,7 +267,7 @@ BROADCAST_CONNECTION=reverb
 Status:
 
 ```text
-Fondasi realtime sudah siap.
+Realtime sudah berjalan dan terverifikasi di HP fisik Android.
 ```
 
 Catatan:
@@ -268,6 +275,7 @@ Catatan:
 - Realtime membutuhkan tiga proses backend aktif: Laravel API, Reverb server, dan queue worker.
 - Jika queue worker tidak berjalan, event broadcast tidak akan sampai ke mobile.
 - Jika Reverb mati, mobile tetap bisa refresh order lewat API, tetapi indikator realtime akan disconnected.
+- **Terverifikasi: order baru muncul realtime di dashboard kasir saat Reverb & queue worker aktif.**
 
 ## Cara Menjalankan Saat Ini
 
@@ -315,7 +323,7 @@ php artisan test
 35 passed
 ```
 
-Mobile sebelumnya sudah dites:
+Mobile terakhir sudah dites:
 
 ```text
 flutter analyze
@@ -325,20 +333,36 @@ flutter test
 All tests passed
 ```
 
+**Verifikasi fisik Android (2026-06-18):**
+
+```text
+✅ Login admin & kasir
+✅ Dashboard admin & kasir
+✅ CRUD produk admin (termasuk upload gambar)
+✅ Order list kasir (pending review, ready-to-confirm, in-progress)
+✅ Verifikasi/tolak pembayaran QRIS
+✅ Confirm, deliver, complete, cancel order
+✅ Detail order dengan item & bukti pembayaran
+✅ Realtime order via Laravel Reverb (order baru muncul otomatis)
+✅ POS cash walk-in
+✅ Connection indicator & offline banner
+```
+
 Catatan:
 
-- Testing tersebut memastikan kode tidak error secara teknis.
-- Testing belum berarti semua flow bisnis order sudah lengkap.
-- Flow kasir dengan data order real masih perlu dites manual dari backend/web/member sampai masuk ke mobile.
+- Testing teknis (analyze & unit test) passed.
+- **Verifikasi manual end-to-end di HP fisik Android sudah selesai dan tanpa error.**
+- Flow kasir dengan data order real sudah dites dari backend/web/member sampai masuk ke mobile.
 
 ## Batasan Saat Ini
 
-Project belum selesai karena beberapa fitur penting belum lengkap:
+**Core MVP sudah selesai dan terverifikasi di HP fisik Android.** Fitur berikut masih untuk fase pengembangan lanjutan:
 
-- Mobile kasir sudah punya flow utama, tetapi route list, detail action, riwayat, filter/search, dan notifikasi masih perlu dilengkapi.
-- Bukti pembayaran sudah bisa ditampilkan dari card/detail kasir melalui endpoint publik API `/api/v1/public/storage/{path}`.
-- Admin reports belum memakai API summary/export baru.
-- Admin user management, notification management, dan delivery setting belum masuk mobile.
+- Riwayat order kasir yang sudah diproses.
+- Filter/search order di dashboard kasir.
+- Notifikasi visual/audio yang lebih matang ketika order baru masuk.
+- Admin reports belum memakai API `/reports/summary` dan `/reports/export` baru.
+- Admin user management, notification management, dan delivery setting belum masuk mobile (backend API sudah siap).
 - Product CRUD admin sudah mendukung upload gambar, tetapi kategori belum punya CRUD mandiri.
 - Member/customer mobile belum dibuat.
 - Fitur favorite, profile, delivery management penuh, dan upload payment proof dari customer masih dominan di backend/web, belum masuk mobile.
@@ -346,22 +370,31 @@ Project belum selesai karena beberapa fitur penting belum lengkap:
 
 ## Prioritas Pekerjaan Berikutnya
 
-Urutan pengerjaan yang disarankan:
+**✅ Sudah selesai (terverifikasi 2026-06-18):**
+1. ~~Uji manual flow real: member order, upload bukti, verify, confirm, deliver/complete, cancel, dan POS cash.~~
+2. ~~Uji realtime end-to-end dari order dibuat sampai muncul di dashboard kasir.~~
 
-1. Uji manual flow real: member order, upload bukti, verify, confirm, deliver/complete, cancel, dan POS cash.
-2. Tambahkan riwayat order kasir.
-3. Tambahkan filter/search order.
-4. Hubungkan reports admin ke API `/reports/summary` dan `/reports/export`.
-5. Tambahkan mobile admin user management dari API `/users`.
-6. Tambahkan mobile admin notification management dari API `/notifications`.
-7. Tambahkan mobile admin delivery setting dari API `/settings/delivery`.
-8. Pertimbangkan CRUD kategori mandiri jika kategori harus bisa dibuat tanpa membuat produk.
-9. Uji realtime end-to-end dari order dibuat sampai muncul di dashboard kasir.
-10. Siapkan konfigurasi APK release untuk HP fisik.
-11. Siapkan konfigurasi production: domain API, HTTPS, dan Reverb production.
+Urutan pengerjaan untuk fase selanjutnya:
+
+1. Tambahkan riwayat order kasir.
+2. Tambahkan filter/search order.
+3. Hubungkan reports admin ke API `/reports/summary` dan `/reports/export`.
+4. Tambahkan mobile admin user management dari API `/users`.
+5. Tambahkan mobile admin notification management dari API `/notifications`.
+6. Tambahkan mobile admin delivery setting dari API `/settings/delivery`.
+7. Pertimbangkan CRUD kategori mandiri jika kategori harus bisa dibuat tanpa membuat produk.
+8. Siapkan konfigurasi APK release untuk HP fisik.
+9. Siapkan konfigurasi production: domain API, HTTPS, dan Reverb production.
 
 ## Kesimpulan
 
-Project Arpul sudah memiliki pondasi yang cukup kuat untuk MVP mobile admin dan kasir. Backend API sudah tersedia, mobile sudah terhubung ke endpoint utama, flow kasir utama sudah masuk, dan realtime order sudah disiapkan menggunakan Laravel Reverb.
+Project Arpul sudah memiliki pondasi yang cukup kuat untuk MVP mobile admin dan kasir. **Backend API sudah tersedia, mobile sudah terhubung ke endpoint utama, flow kasir utama sudah lengkap (termasuk verifikasi pembayaran, confirm, deliver, complete, cancel, POS cash), dan realtime order sudah berjalan menggunakan Laravel Reverb.**
 
-Namun project belum finish. Untuk bisa digunakan operasional penuh, mobile masih perlu menyelesaikan route list kasir, konsistensi action detail order, riwayat/filter, admin user/notification/delivery settings, report summary/export, upload gambar produk, dan pengujian end-to-end dengan backend + Reverb + queue worker.
+**Status terbaru (2026-06-18): MVP mobile admin & kasir sudah selesai dan terverifikasi berjalan di HP fisik Android tanpa error.**
+
+Untuk fase production, mobile masih perlu:
+- Riwayat/filter order kasir
+- Admin user/notification/delivery settings
+- Report summary/export
+- Kategori CRUD mandiri
+- Konfigurasi production final (domain, HTTPS, signing APK, Reverb production)

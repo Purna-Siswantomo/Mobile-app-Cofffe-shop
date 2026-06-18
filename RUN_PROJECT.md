@@ -2,6 +2,8 @@
 
 Dokumen ini menjelaskan cara menjalankan backend Laravel `Arpul-Coffee-shop` dan aplikasi Flutter `arpul_mobile` untuk development lokal.
 
+**✅ Status verifikasi (2026-06-18): Aplikasi sudah diuji di HP fisik Android dan berjalan tanpa error menggunakan konfigurasi di bawah ini.**
+
 ## Struktur Folder
 
 ```text
@@ -221,6 +223,18 @@ cd "C:\Users\Purna Siswantomo\Documents\bekas project\arpul_mobile"
 flutter analyze
 flutter test
 ```
+
+**Status verifikasi (2026-06-18):**
+
+```text
+flutter analyze
+No issues found!
+
+flutter test
+All tests passed!
+```
+
+**Verifikasi fisik Android:** Aplikasi sudah diuji di HP fisik Android dan berjalan tanpa error (login, dashboard admin, dashboard kasir, order list, order detail, realtime Reverb, POS cash).
 
 ## 7. Build APK
 

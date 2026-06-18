@@ -30,12 +30,14 @@ Perubahan penting dari summary awal:
 - Base URL development sekarang memakai port `8001`.
 - Realtime tidak lagi memakai package `pusher_channels_flutter`; mobile memakai Laravel Reverb/self-hosted WebSocket melalui `web_socket_channel`.
 - Model JSON sudah disesuaikan dengan backend untuk field snake_case dan numeric string.
-- Flow kasir sudah diperluas: pending review, verifikasi/tolak pembayaran, ready-to-confirm, in-progress, deliver, complete, cancel, dan POS cash.
+- Flow kasir sudah diperluas: pending review, verifikasi/tolak pembayaran, ready-to-confirm, in-progress, deliver, complete, cancel idempotent, detail order dengan item/bukti pembayaran, realtime Reverb, dan POS cash sederhana.
 - Admin reports sudah terhubung ke endpoint transaksi sebagai list dasar, walaupun filter/export/detail penuh belum selesai.
 - Backend API admin sudah diperluas untuk user management, notification management, delivery setting, report summary, dan report export rows. Mobile admin untuk fitur-fitur itu belum dibuat kecuali report/transaksi dasar.
 - Product CRUD admin mobile sudah mendukung upload gambar dari galeri/kamera memakai multipart, preview gambar, kategori dari backend, dan tambah kategori lokal yang tersimpan saat produk dibuat/disimpan.
 - URL gambar upload produk dan bukti pembayaran memakai endpoint publik API `/api/v1/public/storage/{path}` agar bisa diakses dari HP fisik tanpa bergantung pada symlink `/storage`.
 - Cancel order kasir sudah dibuat idempotent di API: request ulang pada order yang sudah `canceled` tidak lagi dianggap error. Dialog alasan cancel memakai widget stateful agar tidak memicu assertion Flutter `_dependents.isEmpty`.
+
+**✅ Verifikasi fisik Android (2026-06-18): Aplikasi sudah diuji di HP fisik Android dan berjalan tanpa error. Semua fitur core, admin, kasir, realtime, dan POS sudah working end-to-end.**
 
 ## Inisialisasi Project
 
@@ -702,48 +704,54 @@ Berisi:
 
 ## Status Akhir
 
-Aplikasi sudah berada pada tahap **MVP mobile app siap integrasi backend**.
+**Aplikasi sudah berada pada tahap MVP mobile app siap integrasi backend dan terverifikasi berjalan di HP fisik Android tanpa error (2026-06-18).**
 
-Yang sudah selesai:
+Yang sudah selesai dan terverifikasi:
 
 - Setup project Flutter
 - Dependency management
-- Constants
+- Constants (support `--dart-define` untuk environment)
 - Secure storage
 - Dio client
 - Error handling
-- Model Freezed
+- Model Freezed (dengan mapping snake_case & numeric string converter)
 - Repository layer
 - Riverpod provider
 - GoRouter dengan role guard
 - Theme brand Arpul
-- Shared widgets
-- Login screen
-- Kasir dashboard
-- Order card
-- Order detail
-- Admin dashboard
-- Product list
-- Product form
-- Laravel Reverb real-time service
-- Android permission
-- Unit test
+- Shared widgets (loading, error, empty state, status badge, connection indicator, payment proof viewer, reason dialog)
+- Login screen (terverifikasi login admin & kasir di HP fisik)
+- Kasir dashboard (dengan realtime indicator & offline banner)
+- Order card (dengan status badge & aksi verifikasi/confirm/deliver/complete/cancel)
+- Order detail (dengan item, customer, delivery, bukti pembayaran)
+- Admin dashboard (stat card real-time)
+- Product list (pull-to-refresh, shimmer, empty state)
+- Product form (create/edit, upload gambar galeri/kamera, preview, kategori)
+- Laravel Reverb real-time service (terverifikasi order baru muncul realtime di HP fisik)
+- Android permission (INTERNET, ACCESS_NETWORK_STATE, cleartext traffic untuk dev)
+- Unit test (auth repository, order notifier - all passed)
 - README
 - Debug APK build
+- **Verifikasi end-to-end di HP fisik Android: login, dashboard admin, dashboard kasir, CRUD produk, order list, verifikasi pembayaran, confirm/deliver/complete/cancel order, detail order, realtime Reverb, POS cash**
 
 ## Lanjutan yang Direkomendasikan
 
-Pekerjaan berikutnya:
-
+**✅ Sudah selesai (terverifikasi 2026-06-18):**
 - Integrasi langsung dengan backend Laravel live
 - Sesuaikan parsing JSON jika response backend berbeda
+- Implementasi upload gambar produk
+- Konfigurasi Reverb key/host/port untuk environment target
+- Setup environment dev/prod (via `--dart-define`)
+
+Pekerjaan berikutnya untuk fase lanjutan:
+
 - Implementasi mobile admin user management dari API `/users`
 - Implementasi mobile admin notification management dari API `/notifications`
 - Implementasi mobile admin delivery setting dari API `/settings/delivery`
 - Lengkapi reports screen dengan `/reports/summary` dan `/reports/export`
-- Implementasi upload gambar produk
-- Konfigurasi Reverb key/host/port untuk environment target
-- Setup environment dev/prod
+- Tambahkan riwayat order kasir
+- Tambahkan filter/search order kasir
+- Notifikasi visual/audio yang lebih matang untuk order baru
 - Build release APK/AAB
 - Konfigurasi app signing
 - Production hardening:

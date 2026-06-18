@@ -2,21 +2,26 @@
 
 Flutter mobile app untuk operasional kedai kopi **Arpul**. Aplikasi ini terhubung ke backend Laravel `Arpul-Coffee-shop` dan mendukung role **admin** dan **kasir**.
 
+**Status: Aplikasi sudah berjalan di Android fisik tanpa error (terverifikasi 2026-06-18).**
+
 Status progress terbaru project ada di [PROJECT_STATUS.md](PROJECT_STATUS.md).
 
 ## Fitur
 
 - Login/logout dengan Laravel Sanctum token
 - Role guard admin/kasir
-- Dashboard admin
-- CRUD produk admin
+- Dashboard admin dengan stat card real-time
+- CRUD produk admin (termasuk upload gambar dari galeri/kamera)
 - Reports admin dari endpoint transaksi
 - Backend API admin siap untuk user management, notification management, delivery setting, report summary, dan export rows
-- Dashboard kasir
-- Pending order list
-- Confirm/cancel order
-- Detail order dan item pesanan
+- Dashboard kasir dengan indikator koneksi real-time
+- Pending order list (pending review, ready-to-confirm, in-progress)
+- Verifikasi/tolak pembayaran QRIS
+- Confirm/cancel order dengan alasan
+- Deliver/complete order
+- Detail order dan item pesanan + bukti pembayaran
 - Real-time order notification via Laravel Reverb
+- POS cash sederhana untuk walk-in
 - Theme brand kedai kopi Arpul
 - Unit test repository dan notifier
 
@@ -65,19 +70,24 @@ Base URL API ada di:
 lib/core/constants/api_constants.dart
 ```
 
-Saat ini default untuk Android emulator:
+Default aplikasi saat ini (tested di HP fisik Android):
 
 ```dart
-static const String kBaseUrl = 'http://10.0.2.2:8001/api/v1';
+static const String kBaseUrl = String.fromEnvironment(
+  'API_BASE_URL',
+  defaultValue: 'http://172.10.98.90:8001/api/v1',
+);
 ```
+
+Gunakan `--dart-define=API_BASE_URL=...` untuk menyesuaikan host tanpa mengubah source code.
 
 Catatan URL:
 
 - Android emulator ke backend lokal: `http://10.0.2.2:8001/api/v1`
 - Windows/Chrome/iOS simulator ke backend lokal: `http://127.0.0.1:8001/api/v1`
-- HP fisik: gunakan IP LAN komputer backend, contoh `http://192.168.1.10:8001/api/v1`
+- HP fisik: gunakan IP LAN komputer backend, contoh `http://192.168.1.10:8001/api/v1` atau IP aktual komputer backend (contoh: `http://172.10.98.90:8001/api/v1`)
 
-Jika ingin test di HP fisik, ganti `kBaseUrl` ke IP komputer yang menjalankan Laravel.
+Jika ingin test di HP fisik, ganti `API_BASE_URL` ke IP komputer yang menjalankan Laravel via `--dart-define`.
 
 ## Menjalankan Backend Laravel
 
@@ -189,7 +199,7 @@ Jalankan test:
 flutter test
 ```
 
-Status terakhir:
+Status terakhir (terverifikasi 2026-06-18):
 
 ```text
 flutter analyze
@@ -199,27 +209,31 @@ flutter test
 All tests passed!
 ```
 
+**Verifikasi fisik Android:** Aplikasi sudah diuji di HP fisik Android dan berjalan tanpa error (login, dashboard admin, dashboard kasir, order list, order detail, realtime Reverb, POS cash).
+
 ## Akun Testing
 
 Gunakan akun dari database/seeder backend Laravel.
 
-Contoh umum:
-
 ```text
 Admin
 email: admin@arpul.com
-password: password
+password: admin123
 
 Kasir
 email: kasir@arpul.com
-password: password
+password: kasir123
+
+Member
+email: member@arpul.com
+password: member123
 ```
 
-Jika tidak bisa login, cek data user di backend dan pastikan:
+Jika login gagal, cek data user di database dan pastikan:
 
-- password benar
-- role adalah `admin` atau `kasir`
-- `is_active` bernilai true
+- `role` sesuai: `admin`, `kasir`, atau `member`
+- `is_active` bernilai `true`
+- password sesuai seeder terbaru
 
 ## Laravel Reverb Setup
 

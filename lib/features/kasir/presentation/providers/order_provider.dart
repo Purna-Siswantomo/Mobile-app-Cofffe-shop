@@ -133,8 +133,13 @@ class PendingReviewOrders extends _$PendingReviewOrders {
   }
 
   Future<void> verifyPayment(int id) async {
-    await _runAndRemove(id, () => _repository.verifyPayment(id));
-    ref.invalidate(readyToConfirmOrdersProvider);
+    final verifiedOrder = await _runAndRemove(
+      id,
+      () => _repository.verifyPayment(id),
+    );
+    ref
+        .read(readyToConfirmOrdersProvider.notifier)
+        .addReadyOrder(verifiedOrder);
     ref.invalidate(orderDetailProvider(id));
   }
 
@@ -155,7 +160,7 @@ class PendingReviewOrders extends _$PendingReviewOrders {
     );
   }
 
-  Future<void> _runAndRemove(
+  Future<OrderModel> _runAndRemove(
     int id,
     Future<OrderModel> Function() action,
   ) async {
@@ -166,7 +171,7 @@ class PendingReviewOrders extends _$PendingReviewOrders {
     );
 
     try {
-      await action();
+      return await action();
     } catch (error, stackTrace) {
       state = previousState;
       Error.throwWithStackTrace(error, stackTrace);
@@ -251,6 +256,18 @@ class ReadyToConfirmOrders extends _$ReadyToConfirmOrders {
       state = previousState;
       Error.throwWithStackTrace(error, stackTrace);
     }
+  }
+
+  void addReadyOrder(OrderModel order) {
+    if (order.status != 'pending' || order.paymentStatus != 'verified') {
+      return;
+    }
+
+    final currentOrders = state.value ?? <OrderModel>[];
+    state = AsyncValue.data(
+      [...currentOrders.where((item) => item.id != order.id), order]
+        ..sort((a, b) => b.createdAt.compareTo(a.createdAt)),
+    );
   }
 }
 
