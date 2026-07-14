@@ -4,7 +4,7 @@ const String kBaseUrlProd = ApiConstants.kBaseUrlProd;
 class ApiConstants {
   static const String kBaseUrl = String.fromEnvironment(
     'API_BASE_URL',
-    defaultValue: 'http://127.0.0.1:8001/api/v1',
+    defaultValue: 'http://192.168.136.186:8001/api/v1',
   );
   static const String kBaseUrlProd = String.fromEnvironment(
     'API_BASE_URL_PROD',
